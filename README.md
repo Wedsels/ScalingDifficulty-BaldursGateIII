@@ -15,10 +15,10 @@ With MCM:
 - Allow enemies to be additionally downscaled to the party level
 - Tweak each individual ability score bonus per level
 
-Works alongside any mod, and takes effect on any mod-added enemies.
-Does scale any NPC ally or enemy
-Does not scale any players or recruitable characters.
+Works alongside any mod, and takes effect on any mod-added enemies.  
+Does scale any NPC ally or enemy  
+Does not scale any players or recruitable characters.  
 
-Requires Script Extender.
-Load order does not matter, place anywhere.
-Can be installed and uninstalled freely.
+Requires Script Extender.  
+Load order does not matter, place anywhere.  
+Can be installed and uninstalled freely.  
