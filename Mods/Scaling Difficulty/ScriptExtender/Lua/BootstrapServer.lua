@@ -139,7 +139,7 @@ local function CheckMaxLevel()
                 level = PartyLevel
             end
 
-            local undo = not v.Downscaling and d.Scaled and d.Level > level
+            local undo = d.Scaled and d.Level == level or not v.Downscaling and d.Scaled and d.Level > level
 
             if d.Level < level or v.Downscaling and d.Level > level or undo then
                 Scale( e, d, v, level, undo )
@@ -157,7 +157,7 @@ Ext.Osiris.RegisterListener(
         for _,v in pairs( default.Tabs ) do
             Scaling[ v.TabId ] = {}
             for _,s in pairs( v.Settings ) do
-                Scaling[ v.TabId ][ string.gsub( s.Id, v.TabId, "" ) ] = s.Default
+                Scaling[ v.TabId ][ s.Name ] = s.Default
             end
         end
 
