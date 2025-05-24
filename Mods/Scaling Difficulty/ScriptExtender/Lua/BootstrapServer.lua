@@ -148,11 +148,10 @@ local function CheckMaxLevel()
     end
 end
 
-Ext.Osiris.RegisterListener(
-    "LevelGameplayReady",
-    2,
-    "after",
-    function ( ... )
+Ext.Events.GameStateChanged:Subscribe(
+    function( e )
+        if e.FromState ~= "LoadLevel" then return end
+
         local default = Ext.Json.Parse( Ext.IO.LoadFile( "Mods/Scaling Difficulty/MCM_blueprint.json", "data" ) )
         for _,v in pairs( default.Tabs ) do
             Scaling[ v.TabId ] = {}
