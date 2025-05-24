@@ -1,7 +1,4 @@
 local Key = "Scaling Difficulty"
-local Started = false
-local Downscaling = false
-local PartyLevel = 0
 
 local function DCCPY( org )
     local copy = {}
@@ -36,65 +33,161 @@ end
 --- @field Charisma number
 
 --- @class Entity
+--- @field Scaled boolean
 --- @field Level number
 --- @field Constitution string
 --- @field Physical string
 --- @field Casting string
 --- @field Boost Boost
 
---- @type table< string, Entity >
+--- @type table< string, table< string, Entity > >
 local Scalers = {}
 
-local Scaling = {
-    HP = 8.0,
-    Initiative = 1.0,
-    Physical = 1.5,
-    Casting = 1.5,
-    Strength = 0,
-    Dexterity = 0,
-    Constitution = 0,
-    Intelligence = 0,
-    Wisdom = 0,
-    Charisma = 0
-}
+local Scaling = {}
 
 local function DefaultBoost()
-    local ret = { Proficiency = 0.0 }
-    for k,v in pairs( Scaling ) do
-        ret[ k ] = 0.0
+    local ret = {}
+    for k,v in pairs( Scaling.Enemy ) do
+        if k ~= "Level" and k ~= "Downscaling" then
+            ret[ k ] = 0.0
+        end
     end
     return ret
 end
 
-local function CheckMaxLevel( force )
-    if not Started then return end
+local function Scale( uuid, scale, default, level, undo )
+    local change = level - scale.Level
 
-    local high = 0
-    for _,p in pairs( Osi.DB_Players:Get( nil ) ) do
-        local level = Osi.GetLevel( p[ 1 ] )
-        if level > high then
-            high = level
+    local prev = DCCPY( scale.Boost )
+    if undo then
+        scale.Boost = DefaultBoost()
+    else
+        for k,_ in pairs( scale.Boost ) do
+            if k == "Proficiency" then
+                scale.Boost[ k ] = Whole( level / 4.0 + 1.0 )
+            elseif k == "HP" then
+                scale.Boost[ k ] = Whole( ( default[ k ] + scale.Constitution ) * change )
+            else
+                scale.Boost[ k ] = Whole( default[ k ] * change )
+            end
         end
     end
 
-    if force or high > PartyLevel then
-        PartyLevel = high
+    local once = false
+
+    local remove = ""
+    local add = ""
+    for k,v in pairs( scale.Boost ) do
+        if ( v ~= 0.0 or prev[ k ] ~= 0.0 ) and v ~= prev[ k ] then
+            local fun = ""
+            once = true
+
+            if k == "Proficiency" then
+                fun = "ProficiencyBonusOverride( "
+            elseif k == "HP" then
+                fun = "IncreaseMaxHP( "
+            elseif k == "Initiative" then
+                fun = "Initiative( "
+            elseif k == "Physical" then
+                fun = "Ability( " .. scale.Physical .. ", "
+            elseif k == "Casting" then
+                fun = "Ability( " .. scale.Casting .. ", "
+            else
+                fun = "Ability( " .. k .. ", "
+            end
+
+            if prev[ k ] then
+                remove = remove .. fun .. prev[ k ] .. " );"
+            end
+            add = add .. fun .. v .. " );"
+        end
+    end
+
+    if once then
+        Osi.RemoveBoosts( uuid, remove, 0, Key, "" )
+        Osi.AddBoosts( uuid, add, Key, "" )
+
+        local ent = Ext.Entity.Get( uuid )
+        if not ent then return end
+        local eoc = ent:GetComponent( "EocLevel" )
+        if not eoc then return end
+
+        if undo then
+            scale.Scaled = false
+            eoc.Level = scale.Level
+        else
+            scale.Scaled = true
+            eoc.Level = level
+        end
+        ent:Replicate( "EocLevel" )
+    end
+end
+
+local function CheckMaxLevel()
+    local PartyLevel = 0
+    for _,p in pairs( Osi.DB_Players:Get( nil ) ) do
+        local level = Osi.GetLevel( p[ 1 ] )
+        if level > PartyLevel then
+            PartyLevel = level
+        end
+    end
+
+    for k,v in pairs( Scaling ) do
+        for e,d in pairs( Scalers[ k ] ) do
+            local level = math.max( 0, PartyLevel + v.Level )
+            if level < PartyLevel and not v.Downscaling then
+                level = PartyLevel
+            end
+
+            local undo = not v.Downscaling and d.Scaled and d.Level > level
+
+            if d.Level < level or v.Downscaling and d.Level > level or undo then
+                Scale( e, d, v, level, undo )
+            end
+        end
+    end
+end
+
+Ext.Osiris.RegisterListener(
+    "LevelGameplayReady",
+    2,
+    "after",
+    function ( ... )
+        local default = Ext.Json.Parse( Ext.IO.LoadFile( "Mods/Scaling Difficulty/MCM_blueprint.json", "data" ) )
+        for _,v in pairs( default.Tabs ) do
+            Scaling[ v.TabId ] = {}
+            for _,s in pairs( v.Settings ) do
+                Scaling[ v.TabId ][ string.gsub( s.Id, v.TabId, "" ) ] = s.Default
+            end
+        end
+
+        local host = Osi.GetHostCharacter()
 
         for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
             local eoc = ent:GetComponent( "EocLevel" )
             local id = ent:GetComponent( "Uuid" )
-            if not eoc or not id then goto continue end
-
             local sch = ent:GetComponent( "ServerCharacter" )
-            if sch and sch.PlayerData then goto continue end
+            if not eoc or not id or sch and sch.PlayerData then goto continue end
 
             local uuid = id.EntityUuid
 
-            if not Scalers[ uuid ] then
+            local type = "Enemy"
+            if Osi.IsBoss( uuid ) == 1 then
+                type = "Boss"
+            elseif Osi.IsAlly( uuid, host ) == 1 then
+                type = "Ally"
+            end
+
+            if not Scalers[ type ] then
+                Scalers[ type ] = {}
+            end
+
+            if not Scalers[ type ][ uuid ] then
                 local stats = ent:GetComponent( "Stats" )
                 if not stats then goto continue end
 
-                Scalers[ uuid ] = {
+                Scalers[ type ][ uuid ] = {
+                    Scaled = false,
                     Level = eoc.Level,
                     Boost = DefaultBoost(),
                     Constitution = stats.AbilityModifiers[ 4 ],
@@ -103,105 +196,34 @@ local function CheckMaxLevel( force )
                 }
             end
 
-            local scale = Scalers[ uuid ]
-
-            local undown = not Downscaling and Scalers[ uuid ].Boost.HP ~= 0 and scale.Level > PartyLevel
-
-            if scale.Level < PartyLevel or Downscaling and scale.Level > PartyLevel or undown then
-                local change = PartyLevel - scale.Level
-
-                local prev = DCCPY( scale.Boost )
-                if undown then
-                    scale.Boost = DefaultBoost()
-                else
-                    for k,v in pairs( Scaling ) do
-                        if k == "HP" then
-                            scale.Boost[ k ] = Whole( ( v + scale.Constitution ) * change )
-                        else
-                            scale.Boost[ k ] = Whole( v * change )
-                        end
-                    end
-                    scale.Boost.Proficiency = Whole( PartyLevel / 4.0 + 1.0 )
-                end
-
-                local once = false
-
-                local remove = ""
-                local add = ""
-                for k,v in pairs( scale.Boost ) do
-                    if ( v ~= 0.0 or prev[ k ] ~= 0.0 ) and v ~= prev[ k ] then
-                        local fun = ""
-                        if k == "Proficiency" then
-                            fun = "ProficiencyBonusOverride( "
-                        elseif k == "HP" then
-                            fun = "IncreaseMaxHP( "
-                        elseif k == "Initiative" then
-                            fun = "Initiative( "
-                        elseif k == "Physical" then
-                            fun = "Ability( " .. scale.Physical .. ", "
-                        elseif k == "Casting" then
-                            fun = "Ability( " .. scale.Casting .. ", "
-                        else
-                            fun = "Ability( " .. k .. ", "
-                        end
-
-                        if prev[ k ] then
-                            remove = remove .. fun .. prev[ k ] .. " );"
-                        end
-                        add = add .. fun .. v .. " );"
-
-                        once = true
-                    end
-                end
-
-                if once then
-                    Osi.RemoveBoosts( uuid, remove, 0, Key, "" )
-                    Osi.AddBoosts( uuid, add, Key, "" )
-
-                    if undown then
-                        eoc.Level = scale.Level
-                    else
-                        eoc.Level = PartyLevel
-                    end
-                    ent:Replicate( "EocLevel" )
-                end
-            end
-
             :: continue ::
         end
-    end
-end
 
-if MCM then
-    local function SetValues()
-        for k,v in pairs( Scaling ) do
-            Scaling[ k ] = MCM.Get( k )
-        end
-
-        Downscaling = MCM.Get( "Downscaling" )
-    end
-
-    SetValues()
-
-    Ext.ModEvents.BG3MCM[ "MCM_Setting_Saved" ]:Subscribe(
-        function( payload )
-            if not payload or payload.modUUID ~= ModuleUUID or not payload.settingId then
-                return
+        if MCM then
+            local function SetValues()
+                for t,v in pairs( Scaling ) do
+                    for k,_ in pairs( v ) do
+                        v[ k ] = MCM.Get( t .. k )
+                    end
+                end
             end
 
             SetValues()
-            CheckMaxLevel( true )
-        end
-    )
-end
 
-Ext.Osiris.RegisterListener(
-    "LevelGameplayReady",
-    2,
-    "after",
-    function ( ... )
+            Ext.ModEvents.BG3MCM[ "MCM_Setting_Saved" ]:Subscribe(
+                function( payload )
+                    if not payload or payload.modUUID ~= ModuleUUID or not payload.settingId then
+                        return
+                    end
+
+                    SetValues()
+                    CheckMaxLevel()
+                end
+            )
+        end
+
         Ext.Osiris.RegisterListener( "LeveledUp", 1, "after", CheckMaxLevel )
-        Started = true
+
         CheckMaxLevel()
     end
 )

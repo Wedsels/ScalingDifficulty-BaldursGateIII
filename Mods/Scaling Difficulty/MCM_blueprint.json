@@ -1,190 +1,61 @@
 {
     "ModName": "Scaling Difficulty",
     "Optional": true,
-    "Handles": {
-        "NameHandle": "h89410e7574ff447da2765b9a972aebeec543",
-        "DescriptionHandle": "h83ddb7650cc743c3a36758d824e290999e66"
-    },
     "SchemaVersion": 1,
     "Tabs": [
         {
-            "TabName": "General",
-            "TabId": "General",
-            "Sections": [
-                {
-                    "SectionId": "General",
-                    "SectionName": "General",
-                    "Settings": [
-                        {
-                            "Id": "Downscaling",
-                            "Name": "Downscaling",
-                            "Type": "checkbox",
-                            "Default": false,
-                            "Description": "Downscale enemies to party level in addition to upscaling.",
-                            "Handles": {
-                                "NameHandle": "h050f68d419654a2089dbea348ce541f22836",
-                                "DescriptionHandle": "h461e439797774780bd65697280f0d857f118"
-                            }
-                        },
-                        {
-                            "Id": "HP",
-                            "Name": "HP",
-                            "Type": "slider_float",
-                            "Default": 8.0,
-                            "Description": "The base HP an enemy recieves each level. Constitution Modifier is added onto this.",
-                            "Options": {
-                                "Min": -24.0,
-                                "Max": 24.0
-                            },
-                            "Handles": {
-                                "NameHandle": "h5b93c3826f024e19baeeb3739a90cdd392d5",
-                                "DescriptionHandle": "h9044918753a04e3eb7bcb21fef5bccf2190a"
-                            }
-                        },
-                        {
-                            "Id": "Initiative",
-                            "Name": "Initiative",
-                            "Type": "slider_float",
-                            "Default": 1.0,
-                            "Description": "The Initiative an enemy recieves each level.",
-                            "Options": {
-                                "Min": -10.0,
-                                "Max": 10.0
-                            },
-                            "Handles": {
-                                "NameHandle": "h52c4a082a4444f27ad90a6262c996a2d6f8b",
-                                "DescriptionHandle": "hed229262464f4869a161e0e6ae86ddaf59c7"
-                            }
-                        },
-                        {
-                            "Id": "Physical",
-                            "Name": "Physical",
-                            "Type": "slider_float",
-                            "Default": 1.5,
-                            "Description": "The Physical ability an enemy recieves each level, based on its highest. ( Strength or Dexterity )",
-                            "Options": {
-                                "Min": -10.0,
-                                "Max": 10.0
-                            },
-                            "Handles": {
-                                "NameHandle": "hdbee664671014053a94d285a72dd73c01254",
-                                "DescriptionHandle": "h1d7ce629b7744d3db45fae7316b3eca2agc3"
-                            }
-                        },
-                        {
-                            "Id": "Casting",
-                            "Name": "Casting",
-                            "Type": "slider_float",
-                            "Default": 1.5,
-                            "Description": "The Casting ability an enemy recieves each level, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )",
-                            "Options": {
-                                "Min": -10.0,
-                                "Max": 10.0
-                            },
-                            "Handles": {
-                                "NameHandle": "h668d5bac9a654361a2a8f6343ac49496e975",
-                                "DescriptionHandle": "hbaa874481a114304a9dd2fbf6f064d6b1964"
-                            }
-                        },
-                        {
-                            "Id": "Strength",
-                            "Name": "Strength",
-                            "Type": "slider_float",
-                            "Default": 0.0,
-                            "Description": "The Strength ability an enemy recieves each level.",
-                            "Options": {
-                                "Min": -10.0,
-                                "Max": 10.0
-                            },
-                            "Handles": {
-                                "NameHandle": "had877004fab14f79a8fc9e6a4c36911ec813",
-                                "DescriptionHandle": "h1d29a945268c4ade9f3e32d10f9ffcea9fc7"
-                            }
-                        },
-                        {
-                            "Id": "Dexterity",
-                            "Name": "Dexterity",
-                            "Type": "slider_float",
-                            "Default": 0.0,
-                            "Description": "The Dexterity ability an enemy recieves each level.",
-                            "Options": {
-                                "Min": -10.0,
-                                "Max": 10.0
-                            },
-                            "Handles": {
-                                "NameHandle": "had877004fab14f79a8fc9e6a4c36911ec813",
-                                "DescriptionHandle": "h1d29a945268c4ade9f3e32d10f9ffcea9fc7"
-                            }
-                        },
-                        {
-                            "Id": "Constitution",
-                            "Name": "Constitution",
-                            "Type": "slider_float",
-                            "Default": 0.0,
-                            "Description": "The Constitution ability an enemy recieves each level.",
-                            "Options": {
-                                "Min": -10.0,
-                                "Max": 10.0
-                            },
-                            "Handles": {
-                                "NameHandle": "h0f056e12c66540dbaaca1117c746ff49fc8f",
-                                "DescriptionHandle": "ha0a3d4b1dc8b4dad82a5873bb3d5172b1ddd"
-                            }
-                        },
-                        {
-                            "Id": "Intelligence",
-                            "Name": "Intelligence",
-                            "Type": "slider_float",
-                            "Default": 0.0,
-                            "Description": "The Intelligence ability an enemy recieves each level.",
-                            "Options": {
-                                "Min": -10.0,
-                                "Max": 10.0
-                            },
-                            "Handles": {
-                                "NameHandle": "h2d878172d34243bd85576fea7ff3f5426f6b",
-                                "DescriptionHandle": "h3fd9ac2885c24d0d813b8d15b5c9c0cdce6a"
-                            }
-                        },
-                        {
-                            "Id": "Wisdom",
-                            "Name": "Wisdom",
-                            "Type": "slider_float",
-                            "Default": 0.0,
-                            "Description": "The Wisdom ability an enemy recieves each level.",
-                            "Options": {
-                                "Min": -10.0,
-                                "Max": 10.0
-                            },
-                            "Handles": {
-                                "NameHandle": "h6bfadab2e64b42999e8511277815f3d55510",
-                                "DescriptionHandle": "ha27568cd62ed441ca93efb93b9a2793767c4"
-                            }
-                        },
-                        {
-                            "Id": "Charisma",
-                            "Name": "Charisma",
-                            "Type": "slider_float",
-                            "Default": 0.0,
-                            "Description": "The Charisma ability an enemy recieves each level.",
-                            "Options": {
-                                "Min": -10.0,
-                                "Max": 10.0
-                            },
-                            "Handles": {
-                                "NameHandle": "h816113bd1ef843f5aafe9687dd8071d58b16",
-                                "DescriptionHandle": "h4430ef3137a847f09cdb2f878d7b7c82980f"
-                            }
-                        }
-                    ],
-                    "Handles": {
-                        "NameHandle": "h785557192add4cfca8cabdd7bf94636bgb62"
-                    }
-                }
-            ],
-            "Handles": {
-                "NameHandle": "h2ff97f9d32c84e66adc6137a288a64cc739f"
-            }
+            "TabName": "Enemy",
+            "TabId": "Enemy",
+            "Settings": [
+                { "Type": "checkbox", "Default": false, "Id": "EnemyDownscaling", "Name": "Downscaling", "Description": "Downscale to party level in addition to upscaling." },
+                { "Type": "slider_int", "Default": 0, "Options": { "Min": -10, "Max": 10 }, "Id": "EnemyLevel", "Name": "Level", "Description": "Additional level added onto party level to scale NPC to." },
+                { "Type": "slider_float", "Default": 8.0, "Options": { "Min": -24.0, "Max": 24.0 }, "Id": "EnemyHP", "Name": "HP", "Description": "The base HP recieved each level. Constitution Modifier is added onto this." },
+                { "Type": "slider_float", "Default": 1.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "EnemyInitiative", "Name": "Initiative", "Description": "The Initiative recieved each level." },
+                { "Type": "slider_float", "Default": 1.5, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "EnemyPhysical", "Name": "Physical", "Description": "The Physical ability recieved each level, based on its highest. ( Strength or Dexterity )" },
+                { "Type": "slider_float", "Default": 1.5, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "EnemyCasting", "Name": "Casting", "Description": "The Casting ability recieved each level, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )" },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "EnemyStrength", "Name": "Strength", "Description": "The Strength ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "EnemyDexterity", "Name": "Dexterity", "Description": "The Dexterity ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "EnemyConstitution", "Name": "Constitution", "Description": "The Constitution ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "EnemyIntelligence", "Name": "Intelligence", "Description": "The Intelligence ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "EnemyWisdom", "Name": "Wisdom", "Description": "The Wisdom ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "EnemyCharisma", "Name": "Charisma", "Description": "The Charisma ability recieved each level." }
+            ]
+        },
+        {
+            "TabName": "Ally",
+            "TabId": "Ally",
+            "Settings": [
+                { "Type": "checkbox", "Default": false, "Id": "AllyDownscaling", "Name": "Downscaling", "Description": "Downscale to party level in addition to upscaling." },
+                { "Type": "slider_int", "Default": 0, "Options": { "Min": -10, "Max": 10 }, "Id": "AllyLevel", "Name": "Level", "Description": "Additional level added onto party level to scale NPC to." },
+                { "Type": "slider_float", "Default": 8.0, "Options": { "Min": -24.0, "Max": 24.0 }, "Id": "AllyHP", "Name": "HP", "Description": "The base HP recieved each level. Constitution Modifier is added onto this." },
+                { "Type": "slider_float", "Default": 1.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "AllyInitiative", "Name": "Initiative", "Description": "The Initiative recieved each level." },
+                { "Type": "slider_float", "Default": 1.5, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "AllyPhysical", "Name": "Physical", "Description": "The Physical ability recieved each level, based on its highest. ( Strength or Dexterity )" },
+                { "Type": "slider_float", "Default": 1.5, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "AllyCasting", "Name": "Casting", "Description": "The Casting ability recieved each level, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )" },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "AllyStrength", "Name": "Strength", "Description": "The Strength ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "AllyDexterity", "Name": "Dexterity", "Description": "The Dexterity ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "AllyConstitution", "Name": "Constitution", "Description": "The Constitution ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "AllyIntelligence", "Name": "Intelligence", "Description": "The Intelligence ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "AllyWisdom", "Name": "Wisdom", "Description": "The Wisdom ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "AllyCharisma", "Name": "Charisma", "Description": "The Charisma ability recieved each level." }
+            ]
+        },
+        {
+            "TabName": "Boss",
+            "TabId": "Boss",
+            "Settings": [
+                { "Type": "checkbox", "Default": false, "Id": "BossDownscaling", "Name": "Downscaling", "Description": "Downscale to party level in addition to upscaling." },
+                { "Type": "slider_int", "Default": 0, "Options": { "Min": -10, "Max": 10 }, "Id": "BossLevel", "Name": "Level", "Description": "Additional level added onto party level to scale NPC to." },
+                { "Type": "slider_float", "Default": 8.0, "Options": { "Min": -24.0, "Max": 24.0 }, "Id": "BossHP", "Name": "HP", "Description": "The base HP recieved each level. Constitution Modifier is added onto this." },
+                { "Type": "slider_float", "Default": 1.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "BossInitiative", "Name": "Initiative", "Description": "The Initiative recieved each level." },
+                { "Type": "slider_float", "Default": 1.5, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "BossPhysical", "Name": "Physical", "Description": "The Physical ability recieved each level, based on its highest. ( Strength or Dexterity )" },
+                { "Type": "slider_float", "Default": 1.5, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "BossCasting", "Name": "Casting", "Description": "The Casting ability recieved each level, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )" },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "BossStrength", "Name": "Strength", "Description": "The Strength ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "BossDexterity", "Name": "Dexterity", "Description": "The Dexterity ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "BossConstitution", "Name": "Constitution", "Description": "The Constitution ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "BossIntelligence", "Name": "Intelligence", "Description": "The Intelligence ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "BossWisdom", "Name": "Wisdom", "Description": "The Wisdom ability recieved each level." },
+                { "Type": "slider_float", "Default": 0.0, "Options": { "Min": -10.0, "Max": 10.0 }, "Id": "BossCharisma", "Name": "Charisma", "Description": "The Charisma ability recieved each level." }
+            ]
         }
     ]
 }
