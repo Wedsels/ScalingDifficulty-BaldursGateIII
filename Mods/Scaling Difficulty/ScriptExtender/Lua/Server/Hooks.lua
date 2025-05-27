@@ -18,7 +18,7 @@ return function( _V, _F )
                 function()
                     for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
                         if ent.Uuid then
-                            Osi.AddBoosts( ent.Uuid.EntityUuid, "IncreaseMaxHP(0)", "", "" )
+                            Osi.AddBoosts( ent.Uuid.EntityUuid, "IncreaseMaxHP( 0 )", "", "" )
                         end
                     end
                 end

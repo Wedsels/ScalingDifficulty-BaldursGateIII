@@ -1,4 +1,5 @@
-Scales under-leveled enemies to the highest player level.
+Scale NPC's with a custom scaling framework, including base stat bonuses and real-time global updates.  
+Support for MCM, allowing extensive customization.
 
 Since levels have no effect on enemies, this mod uses its own scaling system.  
 Each level an enemy gets scaled, they will gain:
@@ -16,7 +17,7 @@ With MCM:
 - Tweak each individual ability score bonus per level
 - Tweak each ability score, ac, hp, initiative
 - Increase or decrease target level
-- Change the scaling of Ally, Enemy, Boss individually
+- Change the scaling of Ally, Summon, Enemy, Boss individually
 
 Works alongside any mod, and takes effect on any mod-added enemies.  
 Does scale any NPC ally or enemy  
@@ -24,4 +25,4 @@ Does not scale any players or recruitable characters.
 
 Requires Script Extender.  
 Load order does not matter, place anywhere.  
-Can be installed and uninstalled freely.  
+Can be installed and uninstalled freely.

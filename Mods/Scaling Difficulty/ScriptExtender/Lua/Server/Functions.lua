@@ -47,6 +47,8 @@ return function( _V )
             local type = "Enemy"
             if Osi.IsBoss( uuid ) == 1 then
                 type = "Boss"
+            elseif ent.Faction and ent.Faction.SummonOwner then
+                type = "Summon"
             elseif Osi.IsAlly( uuid, Osi.GetHostCharacter() ) == 1 then
                 type = "Ally"
             end
@@ -145,19 +147,44 @@ return function( _V )
             return
         end
 
-        if index == 3 or index == 2 then
-            local hp = _F.Whole( entity.Stats.HP + entity.Modifiers.Current.Constitution * entity.LevelChange ) + ( entity.Modifiers.Current.Constitution - entity.Modifiers.Original.Constitution ) * entity.LevelBase
+        if index == 3 then
+            if not clean then
+                entity.Health.MaxHp = health.MaxHp
+            end
 
-            health.MaxHp = health.MaxHp + hp
-            if clean then health.MaxHp = health.MaxHp - entity.OldStats.HP end
-            health.MaxHp = math.max( 1, health.MaxHp )
+            health.MaxHp = math.max( 0,
+                _F.Whole(
+                    (
+                        entity.Health.MaxHp
+                        +
+                        (
+                            entity.Stats.HP
+                            +
+                            entity.Modifiers.Current.Constitution
+                            *
+                            entity.LevelChange
+                            +
+                            (
+                                entity.Modifiers.Current.Constitution
+                                -
+                                entity.Modifiers.Original.Constitution
+                            )
+                            *
+                            entity.LevelBase
+                        )
+                    )
+                    *
+                    (
+                        1.0
+                        +
+                        entity.Stats.PercentHP
+                    )
+                )
+            )
 
-            entity.Health.MaxHp = health.MaxHp
-
-            health.Hp = math.ceil( entity.Health.MaxHp * entity.Health.Percent )
+            health.Hp = math.ceil( health.MaxHp * entity.Health.Percent )
             entity.Health.Hp = health.Hp
 
-            entity.OldStats.HP = hp
             ent:Replicate( "Health" )
         end
     end

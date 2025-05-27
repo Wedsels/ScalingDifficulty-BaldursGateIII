@@ -9,6 +9,7 @@ _V.Key = "Scaling Difficulty"
 _V.Stats = {}
 --- @class Stats
 --- @field HP number
+--- @field PercentHP number
 --- @field AC number
 --- @field Initiative number
 --- @field Physical number
@@ -33,7 +34,7 @@ _V.Core = {}
 --- @field Leveling Stats
 --- @field General General
 
---- @type table< "Enemy" | "Ally" | "Boss", Core >
+--- @type table< "Enemy" | "Ally" | "Summon" | "Boss", Core >
 _V.Hub = {}
 
 --- @class Health
