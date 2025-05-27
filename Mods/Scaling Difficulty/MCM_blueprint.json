@@ -1,60 +1,151 @@
 {
     "ModName": "Scaling Difficulty",
+    "ModDescription": "",
     "Optional": true,
     "SchemaVersion": 1,
     "Tabs": [
         {
             "TabName": "Enemy",
             "TabId": "Enemy",
-            "Settings": [
-                { "Type": "checkbox", "Default": false, "Id": "EnemyDownscaling", "Name": "Downscaling", "Tooltip": "Downscale to party level in addition to upscaling." },
-                { "Type": "int", "Default": 0, "Id": "EnemyLevel", "Name": "Level", "Tooltip": "Additional level added onto party level to scale NPC to." },
-                { "Type": "float", "Default": 8.0, "Id": "EnemyHP", "Name": "HP", "Tooltip": "The base HP recieved each level. Constitution Modifier is added onto this." },
-                { "Type": "float", "Default": 1.0, "Id": "EnemyInitiative", "Name": "Initiative", "Tooltip": "The Initiative recieved each level." },
-                { "Type": "float", "Default": 1.5, "Id": "EnemyPhysical", "Name": "Physical", "Tooltip": "The Physical ability recieved each level, based on its highest. ( Strength or Dexterity )" },
-                { "Type": "float", "Default": 1.5, "Id": "EnemyCasting", "Name": "Casting", "Tooltip": "The Casting ability recieved each level, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )" },
-                { "Type": "float", "Default": 0.0, "Id": "EnemyStrength", "Name": "Strength", "Tooltip": "The Strength ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "EnemyDexterity", "Name": "Dexterity", "Tooltip": "The Dexterity ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "EnemyConstitution", "Name": "Constitution", "Tooltip": "The Constitution ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "EnemyIntelligence", "Name": "Intelligence", "Tooltip": "The Intelligence ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "EnemyWisdom", "Name": "Wisdom", "Tooltip": "The Wisdom ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "EnemyCharisma", "Name": "Charisma", "Tooltip": "The Charisma ability recieved each level." }
+            "Sections": [
+                {
+                    "SectionId": "EnemyGeneral",
+                    "SectionName": "General",
+                    "Settings": [
+                        { "Type": "checkbox", "Default": false, "Id": "GeneralEnemyDownscaling", "Name": "Downscaling", "Tooltip": "Downscale to party level in addition to upscaling." },
+                        { "Type": "int", "Default": 0, "Id": "GeneralEnemyLevelBonus", "Name": "LevelBonus", "Tooltip": "Additional level added onto party level to scale NPC to." }
+                    ]
+                },
+                {
+                    "SectionId": "EnemyLeveling",
+                    "SectionName": "Leveling",
+                    "Settings": [
+                        { "Type": "float", "Default": 8.0, "Id": "LevelingEnemyHP", "Name": "HP", "Tooltip": "The base HP recieved each scaled level. Constitution Modifier is added onto this." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingEnemyAC", "Name": "AC", "Tooltip": "The base AC recieved each scaled level." },
+                        { "Type": "float", "Default": 1.0, "Id": "LevelingEnemyInitiative", "Name": "Initiative", "Tooltip": "The Initiative recieved each scaled level." },
+                        { "Type": "float", "Default": 1.5, "Id": "LevelingEnemyPhysical", "Name": "Physical", "Tooltip": "The Physical ability recieved each scaled level, based on its highest. ( Strength or Dexterity )" },
+                        { "Type": "float", "Default": 1.5, "Id": "LevelingEnemyCasting", "Name": "Casting", "Tooltip": "The Casting ability recieved each scaled level, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )" },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingEnemyStrength", "Name": "Strength", "Tooltip": "The Strength ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingEnemyDexterity", "Name": "Dexterity", "Tooltip": "The Dexterity ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingEnemyConstitution", "Name": "Constitution", "Tooltip": "The Constitution ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingEnemyIntelligence", "Name": "Intelligence", "Tooltip": "The Intelligence ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingEnemyWisdom", "Name": "Wisdom", "Tooltip": "The Wisdom ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingEnemyCharisma", "Name": "Charisma", "Tooltip": "The Charisma ability recieved each scaled level." }
+                    ]
+                },
+                {
+                    "SectionId": "EnemyBonus",
+                    "SectionName": "Bonus",
+                    "Settings": [
+                        { "Type": "int", "Default": 0.0, "Id": "BonusEnemyHP", "Name": "HP", "Tooltip": "The base HP." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusEnemyAC", "Name": "AC", "Tooltip": "The base AC." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusEnemyInitiative", "Name": "Initiative", "Tooltip": "The Initiative." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusEnemyPhysical", "Name": "Physical", "Tooltip": "The Physical ability, based on its highest. ( Strength or Dexterity )" },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusEnemyCasting", "Name": "Casting", "Tooltip": "The Casting ability, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )" },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusEnemyStrength", "Name": "Strength", "Tooltip": "The Strength ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusEnemyDexterity", "Name": "Dexterity", "Tooltip": "The Dexterity ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusEnemyConstitution", "Name": "Constitution", "Tooltip": "The Constitution ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusEnemyIntelligence", "Name": "Intelligence", "Tooltip": "The Intelligence ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusEnemyWisdom", "Name": "Wisdom", "Tooltip": "The Wisdom ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusEnemyCharisma", "Name": "Charisma", "Tooltip": "The Charisma ability." }
+                    ]
+                }
             ]
         },
         {
             "TabName": "Ally",
             "TabId": "Ally",
-            "Settings": [
-                { "Type": "checkbox", "Default": false, "Id": "AllyDownscaling", "Name": "Downscaling", "Tooltip": "Downscale to party level in addition to upscaling." },
-                { "Type": "int", "Default": 0, "Id": "AllyLevel", "Name": "Level", "Tooltip": "Additional level added onto party level to scale NPC to." },
-                { "Type": "float", "Default": 8.0, "Id": "AllyHP", "Name": "HP", "Tooltip": "The base HP recieved each level. Constitution Modifier is added onto this." },
-                { "Type": "float", "Default": 1.0, "Id": "AllyInitiative", "Name": "Initiative", "Tooltip": "The Initiative recieved each level." },
-                { "Type": "float", "Default": 1.5, "Id": "AllyPhysical", "Name": "Physical", "Tooltip": "The Physical ability recieved each level, based on its highest. ( Strength or Dexterity )" },
-                { "Type": "float", "Default": 1.5, "Id": "AllyCasting", "Name": "Casting", "Tooltip": "The Casting ability recieved each level, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )" },
-                { "Type": "float", "Default": 0.0, "Id": "AllyStrength", "Name": "Strength", "Tooltip": "The Strength ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "AllyDexterity", "Name": "Dexterity", "Tooltip": "The Dexterity ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "AllyConstitution", "Name": "Constitution", "Tooltip": "The Constitution ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "AllyIntelligence", "Name": "Intelligence", "Tooltip": "The Intelligence ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "AllyWisdom", "Name": "Wisdom", "Tooltip": "The Wisdom ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "AllyCharisma", "Name": "Charisma", "Tooltip": "The Charisma ability recieved each level." }
+            "Sections": [
+                {
+                    "SectionId": "AllyGeneral",
+                    "SectionName": "General",
+                    "Settings": [
+                        { "Type": "checkbox", "Default": false, "Id": "GeneralAllyDownscaling", "Name": "Downscaling", "Tooltip": "Downscale to party level in addition to upscaling." },
+                        { "Type": "int", "Default": 0, "Id": "GeneralAllyLevelBonus", "Name": "LevelBonus", "Tooltip": "Additional level added onto party level to scale NPC to." }
+                    ]
+                },
+                {
+                    "SectionId": "AllyLeveling",
+                    "SectionName": "Leveling",
+                    "Settings": [
+                        { "Type": "float", "Default": 8.0, "Id": "LevelingAllyHP", "Name": "HP", "Tooltip": "The base HP recieved each scaled level. Constitution Modifier is added onto this." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingAllyAC", "Name": "AC", "Tooltip": "The base AC recieved each scaled level." },
+                        { "Type": "float", "Default": 1.0, "Id": "LevelingAllyInitiative", "Name": "Initiative", "Tooltip": "The Initiative recieved each scaled level." },
+                        { "Type": "float", "Default": 1.5, "Id": "LevelingAllyPhysical", "Name": "Physical", "Tooltip": "The Physical ability recieved each scaled level, based on its highest. ( Strength or Dexterity )" },
+                        { "Type": "float", "Default": 1.5, "Id": "LevelingAllyCasting", "Name": "Casting", "Tooltip": "The Casting ability recieved each scaled level, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )" },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingAllyStrength", "Name": "Strength", "Tooltip": "The Strength ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingAllyDexterity", "Name": "Dexterity", "Tooltip": "The Dexterity ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingAllyConstitution", "Name": "Constitution", "Tooltip": "The Constitution ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingAllyIntelligence", "Name": "Intelligence", "Tooltip": "The Intelligence ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingAllyWisdom", "Name": "Wisdom", "Tooltip": "The Wisdom ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingAllyCharisma", "Name": "Charisma", "Tooltip": "The Charisma ability recieved each scaled level." }
+                    ]
+                },
+                {
+                    "SectionId": "AllyBonus",
+                    "SectionName": "Bonus",
+                    "Settings": [
+                        { "Type": "int", "Default": 0.0, "Id": "BonusAllyHP", "Name": "HP", "Tooltip": "The base HP." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusAllyAC", "Name": "AC", "Tooltip": "The base AC." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusAllyInitiative", "Name": "Initiative", "Tooltip": "The Initiative." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusAllyPhysical", "Name": "Physical", "Tooltip": "The Physical ability, based on its highest. ( Strength or Dexterity )" },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusAllyCasting", "Name": "Casting", "Tooltip": "The Casting ability, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )" },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusAllyStrength", "Name": "Strength", "Tooltip": "The Strength ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusAllyDexterity", "Name": "Dexterity", "Tooltip": "The Dexterity ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusAllyConstitution", "Name": "Constitution", "Tooltip": "The Constitution ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusAllyIntelligence", "Name": "Intelligence", "Tooltip": "The Intelligence ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusAllyWisdom", "Name": "Wisdom", "Tooltip": "The Wisdom ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusAllyCharisma", "Name": "Charisma", "Tooltip": "The Charisma ability." }
+                    ]
+                }
             ]
         },
         {
             "TabName": "Boss",
             "TabId": "Boss",
-            "Settings": [
-                { "Type": "checkbox", "Default": false, "Id": "BossDownscaling", "Name": "Downscaling", "Tooltip": "Downscale to party level in addition to upscaling." },
-                { "Type": "int", "Default": 0, "Id": "BossLevel", "Name": "Level", "Tooltip": "Additional level added onto party level to scale NPC to." },
-                { "Type": "float", "Default": 8.0, "Id": "BossHP", "Name": "HP", "Tooltip": "The base HP recieved each level. Constitution Modifier is added onto this." },
-                { "Type": "float", "Default": 1.0, "Id": "BossInitiative", "Name": "Initiative", "Tooltip": "The Initiative recieved each level." },
-                { "Type": "float", "Default": 1.5, "Id": "BossPhysical", "Name": "Physical", "Tooltip": "The Physical ability recieved each level, based on its highest. ( Strength or Dexterity )" },
-                { "Type": "float", "Default": 1.5, "Id": "BossCasting", "Name": "Casting", "Tooltip": "The Casting ability recieved each level, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )" },
-                { "Type": "float", "Default": 0.0, "Id": "BossStrength", "Name": "Strength", "Tooltip": "The Strength ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "BossDexterity", "Name": "Dexterity", "Tooltip": "The Dexterity ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "BossConstitution", "Name": "Constitution", "Tooltip": "The Constitution ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "BossIntelligence", "Name": "Intelligence", "Tooltip": "The Intelligence ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "BossWisdom", "Name": "Wisdom", "Tooltip": "The Wisdom ability recieved each level." },
-                { "Type": "float", "Default": 0.0, "Id": "BossCharisma", "Name": "Charisma", "Tooltip": "The Charisma ability recieved each level." }
+            "Sections": [
+                {
+                    "SectionId": "BossGeneral",
+                    "SectionName": "General",
+                    "Settings": [
+                        { "Type": "checkbox", "Default": false, "Id": "GeneralBossDownscaling", "Name": "Downscaling", "Tooltip": "Downscale to party level in addition to upscaling." },
+                        { "Type": "int", "Default": 0, "Id": "GeneralBossLevelBonus", "Name": "LevelBonus", "Tooltip": "Additional level added onto party level to scale NPC to." }
+                    ]
+                },
+                {
+                    "SectionId": "BossLeveling",
+                    "SectionName": "Leveling",
+                    "Settings": [
+                        { "Type": "float", "Default": 12.0, "Id": "LevelingBossHP", "Name": "HP", "Tooltip": "The base HP recieved each scaled level. Constitution Modifier is added onto this." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingBossAC", "Name": "AC", "Tooltip": "The base AC recieved each scaled level." },
+                        { "Type": "float", "Default": 1.0, "Id": "LevelingBossInitiative", "Name": "Initiative", "Tooltip": "The Initiative recieved each scaled level." },
+                        { "Type": "float", "Default": 1.5, "Id": "LevelingBossPhysical", "Name": "Physical", "Tooltip": "The Physical ability recieved each scaled level, based on its highest. ( Strength or Dexterity )" },
+                        { "Type": "float", "Default": 1.5, "Id": "LevelingBossCasting", "Name": "Casting", "Tooltip": "The Casting ability recieved each scaled level, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )" },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingBossStrength", "Name": "Strength", "Tooltip": "The Strength ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingBossDexterity", "Name": "Dexterity", "Tooltip": "The Dexterity ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingBossConstitution", "Name": "Constitution", "Tooltip": "The Constitution ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingBossIntelligence", "Name": "Intelligence", "Tooltip": "The Intelligence ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingBossWisdom", "Name": "Wisdom", "Tooltip": "The Wisdom ability recieved each scaled level." },
+                        { "Type": "float", "Default": 0.0, "Id": "LevelingBossCharisma", "Name": "Charisma", "Tooltip": "The Charisma ability recieved each scaled level." }
+                    ]
+                },
+                {
+                    "SectionId": "BossBonus",
+                    "SectionName": "Bonus",
+                    "Settings": [
+                        { "Type": "int", "Default": 0.0, "Id": "BonusBossHP", "Name": "HP", "Tooltip": "The base HP." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusBossAC", "Name": "AC", "Tooltip": "The base AC." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusBossInitiative", "Name": "Initiative", "Tooltip": "The Initiative." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusBossPhysical", "Name": "Physical", "Tooltip": "The Physical ability, based on its highest. ( Strength or Dexterity )" },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusBossCasting", "Name": "Casting", "Tooltip": "The Casting ability, based on its spellcasting ability. ( Intelligence, Charisma, or Wisdom )" },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusBossStrength", "Name": "Strength", "Tooltip": "The Strength ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusBossDexterity", "Name": "Dexterity", "Tooltip": "The Dexterity ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusBossConstitution", "Name": "Constitution", "Tooltip": "The Constitution ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusBossIntelligence", "Name": "Intelligence", "Tooltip": "The Intelligence ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusBossWisdom", "Name": "Wisdom", "Tooltip": "The Wisdom ability." },
+                        { "Type": "int", "Default": 0.0, "Id": "BonusBossCharisma", "Name": "Charisma", "Tooltip": "The Charisma ability." }
+                    ]
+                }
             ]
         }
     ]

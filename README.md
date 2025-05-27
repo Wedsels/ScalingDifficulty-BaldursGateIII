@@ -14,6 +14,9 @@ With MCM:
 - Change the scaling values for any of the above mentioned
 - Allow enemies to be additionally downscaled to the party level
 - Tweak each individual ability score bonus per level
+- Tweak each ability score, ac, hp, initiative
+- Increase or decrease target level
+- Change the scaling of Ally, Enemy, Boss individually
 
 Works alongside any mod, and takes effect on any mod-added enemies.  
 Does scale any NPC ally or enemy  
