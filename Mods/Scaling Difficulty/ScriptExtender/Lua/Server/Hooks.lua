@@ -5,7 +5,7 @@ return function( _V, _F )
         function( e )
             if e.FromState ~= "LoadLevel" then return end
 
-            Ext.Osiris.RegisterListener( "LeveledUp", 1, "after", function() _F.UpdateNPC() end )
+            Ext.Osiris.RegisterListener( "LeveledUp", 1, "after", function( c ) if Osi.DB_Players:Get( c )[ 1 ] then _F.UpdateNPC() end end )
 
             for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
                 _F.AddNPC( ent )
@@ -24,10 +24,10 @@ return function( _V, _F )
                 end
             )
 
-            Ext.Entity.OnCreate(
+            Ext.Entity.OnCreateDeferred(
                 "EocLevel",
                 function( ent, component, index )
-                    _F.Delay( 500, _F.AddNPC, ent )
+                    _F.AddNPC( ent )
                 end
             )
 

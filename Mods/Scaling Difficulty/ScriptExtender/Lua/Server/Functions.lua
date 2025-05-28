@@ -25,19 +25,13 @@ return function( _V )
     end
 
     _F.AddNPC = function( ent )
-        local origins = {}
-        for _,p in pairs( Osi.DB_Origins:Get( nil ) ) do
-            origins[ string.sub( p[ 1 ], -36 ) ] = true
-        end
-        for _,p in pairs( Osi.DB_Players:Get( nil ) ) do
-            origins[ string.sub( p[ 1 ], -36 ) ] = true
-        end
-
         local eoc = ent.EocLevel
         local id = ent.Uuid
-        if not eoc or not id or origins[ id.EntityUuid ] then return end
+        if not eoc or not id then return end
 
         local uuid = id.EntityUuid
+
+        if not uuid or Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ] then return end
 
         if not _V.Entities[ uuid ] then
             local stats = ent.Stats
@@ -47,7 +41,7 @@ return function( _V )
             local type = "Enemy"
             if Osi.IsBoss( uuid ) == 1 then
                 type = "Boss"
-            elseif ent.Faction and ent.Faction.SummonOwner then
+            elseif Osi.IsSummon( uuid ) == 1 then
                 type = "Summon"
             elseif Osi.IsAlly( uuid, Osi.GetHostCharacter() ) == 1 then
                 type = "Ally"
@@ -65,8 +59,8 @@ return function( _V )
                 OldStats = _F.DefaultStat(),
                 Health = {
                     Hp = health.Hp,
-                    MaxHp = health.MaxHp,
-                    Percent = health.Hp / health.MaxHp
+                    MaxHp = math.max( 1, health.MaxHp ),
+                    Percent = health.Hp / math.max( 1, health.MaxHp )
                 },
                 Modifiers = {
                     Original = (
@@ -127,7 +121,7 @@ return function( _V )
         if clean then stats.InitiativeBonus = stats.InitiativeBonus - entity.OldStats.Initiative end
         entity.OldStats.Initiative = entity.Stats.Initiative
 
-        stats.ProficiencyBonus = 1 + math.floor( ( entity.LevelBase + entity.LevelChange ) / 2 )
+        stats.ProficiencyBonus = 1 + math.floor( ( entity.LevelBase + entity.LevelChange ) / 2.0 )
 
         ent:Replicate( "Stats" )
     end
@@ -141,46 +135,18 @@ return function( _V )
         if index ~= 1 and entity.Health and health.MaxHp ~= entity.Health.MaxHp then
             health.Hp = entity.Health.Hp
         elseif index == 1 then
-            entity.Health.Percent = health.Hp / health.MaxHp
+            entity.Health.Percent = health.Hp / math.max( 1, health.MaxHp )
             entity.Health.Hp = health.Hp
 
             return
         end
 
-        if index == 3 then
+        if index == 3 or index == 2 then
             if not clean then
                 entity.Health.MaxHp = health.MaxHp
             end
 
-            health.MaxHp = math.max( 0,
-                _F.Whole(
-                    (
-                        entity.Health.MaxHp
-                        +
-                        (
-                            entity.Stats.HP
-                            +
-                            entity.Modifiers.Current.Constitution
-                            *
-                            entity.LevelChange
-                            +
-                            (
-                                entity.Modifiers.Current.Constitution
-                                -
-                                entity.Modifiers.Original.Constitution
-                            )
-                            *
-                            entity.LevelBase
-                        )
-                    )
-                    *
-                    (
-                        1.0
-                        +
-                        entity.Stats.PercentHP
-                    )
-                )
-            )
+            health.MaxHp = math.max( 1, _F.Whole( ( entity.Health.MaxHp + entity.Stats.HP + entity.Modifiers.Current.Constitution * entity.LevelChange + ( entity.Modifiers.Current.Constitution - entity.Modifiers.Original.Constitution ) * entity.LevelBase ) * ( 1.0 + entity.Stats.PercentHP ) ) )
 
             health.Hp = math.ceil( health.MaxHp * entity.Health.Percent )
             entity.Health.Hp = health.Hp
@@ -221,6 +187,11 @@ return function( _V )
                 _F.UpdateNPC( id )
             end
         else
+            local ent = Ext.Entity.Get( uuid )
+            if not ent then _V.Entities[ uuid ] = nil return end
+
+            local entity = _V.Entities[ uuid ]
+
             local party = 0
             for _,p in pairs( Osi.DB_Players:Get( nil ) ) do
                 local level = Osi.GetLevel( p[ 1 ] )
@@ -228,8 +199,6 @@ return function( _V )
                     party = level
                 end
             end
-
-            local entity = _V.Entities[ uuid ]
 
             local level = math.max( 0, party + entity.Hub.General.LevelBonus )
             if level < entity.LevelBase and not entity.Hub.General.Downscaling then
@@ -242,7 +211,6 @@ return function( _V )
                 entity.Stats[ stat ] = entity.Hub.Bonus[ stat ] + entity.Hub.Leveling[ stat ] * entity.LevelChange
             end
 
-            local ent = Ext.Entity.Get( uuid )
             _F.SetAbilities( ent, true )
             _F.SetHealth( ent, 3, true )
             _F.SetAC( ent, true )
