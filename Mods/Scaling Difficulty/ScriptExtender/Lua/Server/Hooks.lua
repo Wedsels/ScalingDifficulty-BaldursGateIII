@@ -24,10 +24,10 @@ return function( _V, _F )
                 end
             )
 
-            Ext.Entity.OnCreateDeferred(
+            Ext.Entity.OnCreate(
                 "EocLevel",
                 function( ent, component, index )
-                    _F.AddNPC( ent )
+                    _F.Delay( 500, _F.AddNPC, ent )
                 end
             )
 

@@ -24,6 +24,38 @@ return function( _V )
         )
     end
 
+    _F.IsBoss = function( ent )
+        if not ent.Uuid then
+            return false
+        end
+
+        if Osi.IsBoss( ent.Uuid.EntityUuid ) == 1 then
+            return true
+        end
+
+        if ent.ServerCharacter and ent.ServerCharacter.Template and ent.ServerCharacter.Template.CombatComponent and ent.ServerCharacter.Template.CombatComponent.IsBoss then
+            return true
+        end
+
+        if ent.ServerPassiveBase then
+            for _,t in ipairs( ent.ServerPassiveBase.Passives ) do
+                if t:find( "Legendary" ) then
+                    return true
+                end
+            end
+        end
+
+        if ent.ActionResources and ent.ActionResources.Resources and
+            (
+                ent.ActionResources.Resources[ "732e23a8-bb1d-4bec-a4df-1dd0e03b56c4" ] or
+                ent.ActionResources.Resources[ "4ebba3a3-f42e-42a6-87af-d36592ba8d49" ] or
+                ent.ActionResources.Resources[ "67581067-020c-4e0d-814f-963714479f8a" ]
+            )
+        then return true end
+
+        return false
+    end
+
     _F.AddNPC = function( ent )
         local eoc = ent.EocLevel
         local id = ent.Uuid
@@ -39,7 +71,7 @@ return function( _V )
             if not stats or not health then return end
 
             local type = "Enemy"
-            if Osi.IsBoss( uuid ) == 1 then
+            if _F.IsBoss( uuid ) == 1 then
                 type = "Boss"
             elseif Osi.IsSummon( uuid ) == 1 then
                 type = "Summon"
@@ -52,11 +84,11 @@ return function( _V )
                 Hub = _V.Hub[ type ],
                 LevelBase = eoc.Level,
                 LevelChange = 0,
-                Stats = _F.DefaultStat(),
+                Stats = _F.Default( "Stats" ),
                 Constitution = stats.AbilityModifiers[ 4 ],
                 Physical = stats.Abilities[ 2 ] <= stats.Abilities[ 3 ] and "Dexterity" or "Strength",
                 Casting = tostring( stats.SpellCastingAbility ),
-                OldStats = _F.DefaultStat(),
+                OldStats = _F.Default( "Stats" ),
                 Health = {
                     Hp = health.Hp,
                     MaxHp = math.max( 1, health.MaxHp ),
@@ -72,7 +104,7 @@ return function( _V )
                             return original
                         end
                     )(),
-                    Current = _F.DefaultModifier()
+                    Current = _F.Default( "Abilities" )
                 }
             }
 
@@ -80,20 +112,12 @@ return function( _V )
         end
     end
 
-    _F.DefaultStat = function()
+    _F.Default = function( type )
         local stat = {}
-        for _,v in ipairs( _V.Stats ) do
+        for _,v in ipairs( _V[ type ] ) do
             stat[ v ] = 0.0
         end
         return stat
-    end
-
-    _F.DefaultModifier = function()
-        local ability = {}
-        for k,_ in pairs( _V.Abilities ) do
-            ability[ k ] = 0.0
-        end
-        return ability
     end
 
     _F.SetAbilities = function( ent, clean )
@@ -190,6 +214,8 @@ return function( _V )
             local ent = Ext.Entity.Get( uuid )
             if not ent then _V.Entities[ uuid ] = nil return end
 
+            local undo = Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ]
+
             local entity = _V.Entities[ uuid ]
 
             local party = 0
@@ -208,13 +234,15 @@ return function( _V )
             entity.LevelChange = level - entity.LevelBase
 
             for stat,_ in pairs( entity.Stats ) do
-                entity.Stats[ stat ] = entity.Hub.Bonus[ stat ] + entity.Hub.Leveling[ stat ] * entity.LevelChange
+                entity.Stats[ stat ] = undo and 0 or entity.Hub.Bonus[ stat ] + entity.Hub.Leveling[ stat ] * entity.LevelChange
             end
 
             _F.SetAbilities( ent, true )
             _F.SetHealth( ent, 3, true )
             _F.SetAC( ent, true )
             _F.SetLevel( ent )
+
+            if undo then _V.Entities[ uuid ] = nil end
         end
     end
 
