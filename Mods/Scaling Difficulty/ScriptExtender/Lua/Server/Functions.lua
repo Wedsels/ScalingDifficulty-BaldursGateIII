@@ -45,9 +45,12 @@ return function( _V )
     _F.AddNPC = function( ent )
         local eoc = ent.EocLevel
         local id = ent.Uuid
-        if not eoc or not id or ent.ServerCharacter and ent.ServerCharacter.PlayerData then return end
+        if not eoc or not id then return end
 
         local uuid = id.EntityUuid
+
+        local summon = Osi.IsSummon( uuid ) == 1
+        if not summon and ent.ServerCharacter and ent.ServerCharacter.PlayerData then return end
 
         if not uuid or Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ] then return end
 
@@ -59,14 +62,15 @@ return function( _V )
             local type = "Enemy"
             if _F.IsBoss( uuid ) == 1 then
                 type = "Boss"
-            elseif Osi.IsSummon( uuid ) == 1 then
+            elseif summon then
                 type = "Summon"
-            elseif Osi.IsAlly( uuid, Osi.GetHostCharacter() ) == 1 then
+            elseif Osi.IsEnemy( uuid, Osi.GetHostCharacter() ) == 0 then
                 type = "Ally"
             end
 
             _V.Entities[ uuid ] = {
                 Scaled = false,
+                Type = type,
                 Hub = _V.Hub[ type ],
                 LevelBase = eoc.Level,
                 LevelChange = 0,
@@ -75,6 +79,11 @@ return function( _V )
                 Physical = stats.Abilities[ 2 ] <= stats.Abilities[ 3 ] and "Dexterity" or "Strength",
                 Casting = tostring( stats.SpellCastingAbility ),
                 OldStats = _F.Default( "Stats" ),
+                AC = {
+                    Type = false,
+                    ACBonus = 0,
+                    ACModifier = 0
+                },
                 Health = {
                     Hp = health.Hp,
                     MaxHp = math.max( 1, health.MaxHp ),
@@ -106,6 +115,33 @@ return function( _V )
         return stat
     end
 
+    _F.SetAC = function( ent, clean, type )
+        local uuid = ent.Uuid.EntityUuid
+        local res = ent.Resistances
+        local entity = _V.Entities[ uuid ]
+        if not entity then return end
+
+        local mod = entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity
+
+        local ac = 0
+        if type then
+            ac = clean and entity.Stats.AC + mod or mod
+        else
+            ac = entity.Stats.AC
+        end
+        ac = _F.Whole( ac )
+
+        res.AC = res.AC + ac
+        if clean then
+            res.AC = res.AC - _F.Whole( type and entity.AC.ACBonus + entity.AC.ACModifier or entity.AC.ACBonus )
+        end
+
+        entity.AC.Type = type
+        entity.AC.ACBonus = entity.Stats.AC
+        entity.AC.ACModifier = entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity
+        ent:Replicate( "Resistances" )
+    end
+
     _F.SetAbilities = function( ent, clean )
         local uuid = ent.Uuid.EntityUuid
         local stats = ent.Stats
@@ -134,6 +170,7 @@ return function( _V )
         stats.ProficiencyBonus = 1 + math.floor( ( entity.LevelBase + entity.LevelChange ) / 2.0 )
 
         ent:Replicate( "Stats" )
+        _F.SetAC( ent, clean, true )
     end
 
     _F.SetHealth = function( ent, index, clean )
@@ -151,33 +188,18 @@ return function( _V )
             return
         end
 
-        if index == 3 or index == 2 then
-            if not clean then
+        if index == 59 or index == 3 or index == 2 then
+            if index == 59 or not clean then
                 entity.Health.MaxHp = health.MaxHp
             end
 
             health.MaxHp = math.max( 1, _F.Whole( ( entity.Health.MaxHp + entity.Stats.HP + entity.Modifiers.Current.Constitution * entity.LevelChange + ( entity.Modifiers.Current.Constitution - entity.Modifiers.Original.Constitution ) * entity.LevelBase ) * ( 1.0 + entity.Stats.PercentHP ) ) )
 
-            health.Hp = math.ceil( health.MaxHp * entity.Health.Percent )
+            health.Hp = math.min( health.MaxHp, math.ceil( health.MaxHp * entity.Health.Percent ) )
             entity.Health.Hp = health.Hp
 
             ent:Replicate( "Health" )
         end
-    end
-
-    _F.SetAC = function( ent, clean )
-        local uuid = ent.Uuid.EntityUuid
-        local res = ent.Resistances
-        local entity = _V.Entities[ uuid ]
-        if not entity then return end
-
-        local ac = _F.Whole( entity.Stats.AC + entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity )
-
-        res.AC = res.AC + ac
-        if clean then res.AC = res.AC - entity.OldStats.AC end
-
-        entity.OldStats.AC = ac
-        ent:Replicate( "Resistances" )
     end
 
     _F.SetLevel = function( ent )
@@ -197,12 +219,24 @@ return function( _V )
                 _F.UpdateNPC( id )
             end
         else
+            local entity = _V.Entities[ uuid ]
+            if not entity then return end
+
             local ent = Ext.Entity.Get( uuid )
             if not ent then _V.Entities[ uuid ] = nil return end
 
             local undo = Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ]
 
-            local entity = _V.Entities[ uuid ]
+            if entity.Type ~= "Summon" then
+                local enemy = Osi.IsEnemy( uuid, Osi.GetHostCharacter() )
+                if entity.Type ~= "Ally" and enemy == 0 then
+                    entity.Type = "Ally"
+                    entity.Hub = _V.Hub[ entity.Type ]
+                elseif entity.Type == "Ally" and enemy == 1 then
+                    entity.Type = _F.IsBoss( uuid ) == 1 and "Boss" or "Enemy"
+                    entity.Hub = _V.Hub[ entity.Type ]
+                end
+            end
 
             local party = 0
             for _,p in pairs( Osi.DB_Players:Get( nil ) ) do
@@ -225,7 +259,6 @@ return function( _V )
 
             _F.SetAbilities( ent, true )
             _F.SetHealth( ent, 3, true )
-            _F.SetAC( ent, true )
             _F.SetLevel( ent )
 
             if undo then _V.Entities[ uuid ] = nil end

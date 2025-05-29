@@ -24,6 +24,24 @@ return function( _V, _F )
                 end
             )
 
+            Ext.Osiris.RegisterListener(
+                "CombatStarted",
+                1,
+                "after",
+                function()
+                    _F.UpdateNPC()
+                end
+            )
+
+            Ext.Osiris.RegisterListener(
+                "TurnStarted",
+                1,
+                "after",
+                function( uuid )
+                    _F.UpdateNPC( uuid )
+                end
+            )
+
             Ext.Entity.OnCreate(
                 "EocLevel",
                 function( ent, component, index )

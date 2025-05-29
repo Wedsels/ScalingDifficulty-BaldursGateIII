@@ -37,6 +37,11 @@ _V.Core = {}
 --- @type table< "Enemy" | "Ally" | "Summon" | "Boss", Core >
 _V.Hub = {}
 
+--- @class AC
+--- @field Type boolean
+--- @field ACBonus number
+--- @field ACModifier number
+
 --- @class Health
 --- @field Hp number
 --- @field MaxHp number
@@ -48,6 +53,7 @@ _V.Hub = {}
 
 --- @class Entity
 --- @field Scaled boolean
+--- @field Type string
 --- @field Hub Core
 --- @field LevelBase number
 --- @field LevelChange number
@@ -56,6 +62,7 @@ _V.Hub = {}
 --- @field Casting string
 --- @field Stats Stats
 --- @field OldStats Stats
+--- @field AC AC
 --- @field Health Health
 --- @field Modifiers Modifiers
 
