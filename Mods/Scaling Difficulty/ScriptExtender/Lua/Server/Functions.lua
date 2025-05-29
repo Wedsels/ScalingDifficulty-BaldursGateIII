@@ -10,20 +10,6 @@ return function( _V )
         return math.ceil( n )
     end
 
-    _F.Delay = function( ms, func, ... )
-        local args = { ... }
-        local start = Ext.Utils.MonotonicTime()
-        local handler
-        handler = Ext.Events.Tick:Subscribe(
-            function()
-                if Ext.Utils.MonotonicTime() - start > ms then
-                    Ext.Events.Tick:Unsubscribe( handler )
-                    func( table.unpack( args ) )
-                end
-            end
-        )
-    end
-
     _F.IsBoss = function( ent )
         if not ent.Uuid then
             return false
@@ -59,7 +45,7 @@ return function( _V )
     _F.AddNPC = function( ent )
         local eoc = ent.EocLevel
         local id = ent.Uuid
-        if not eoc or not id then return end
+        if not eoc or not id or ent.ServerCharacter and ent.ServerCharacter.PlayerData then return end
 
         local uuid = id.EntityUuid
 

@@ -3,7 +3,7 @@
 return function( _V, _F )
     Ext.Events.GameStateChanged:Subscribe(
         function( e )
-            if e.FromState ~= "LoadLevel" then return end
+            if e.FromState ~= "LoadLevel" and e.ToState ~= "Sync" then return end
 
             Ext.Osiris.RegisterListener( "LeveledUp", 1, "after", function( c ) if Osi.DB_Players:Get( c )[ 1 ] then _F.UpdateNPC() end end )
 
@@ -27,7 +27,7 @@ return function( _V, _F )
             Ext.Entity.OnCreate(
                 "EocLevel",
                 function( ent, component, index )
-                    _F.Delay( 500, _F.AddNPC, ent )
+                    Ext.Timer.WaitFor( 500, function() _F.AddNPC( ent ) end )
                 end
             )
 
