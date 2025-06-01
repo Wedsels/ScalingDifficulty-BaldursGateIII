@@ -7,6 +7,7 @@ return function( _V, _F )
 
             Ext.Osiris.RegisterListener( "LeveledUp", 1, "after", function( c ) if Osi.DB_Players:Get( c )[ 1 ] then _F.UpdateNPC() end end )
 
+            _V.Entities = {}
             for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
                 _F.AddNPC( ent )
             end
