@@ -23,13 +23,9 @@ _V.Stats = {}
 --- @field Wisdom number
 --- @field Charisma number
 
---- @type Resource
-_V.Resource = {}
---- @class Resource
---- @field Movement number
---- @field ActionPoint number
---- @field BonusActionPoint number
---- @field ReactionActionPoint number
+--- @type Spell
+_V.Spell = {}
+--- @class Spell
 --- @field SpellSlotLevel1 string
 --- @field SpellSlotLevel2 string
 --- @field SpellSlotLevel3 string
@@ -39,6 +35,14 @@ _V.Resource = {}
 --- @field SpellSlotLevel7 string
 --- @field SpellSlotLevel8 string
 --- @field SpellSlotLevel9 string
+
+--- @type Resource
+_V.Resource = {}
+--- @class Resource
+--- @field Movement number
+--- @field ActionPoint number
+--- @field BonusActionPoint number
+--- @field ReactionActionPoint number
 --- @field Rage number
 --- @field KiPoint number
 --- @field WildShape number
@@ -61,6 +65,7 @@ _V.Settings = {}
 --- @field Bonus Stats
 --- @field Leveling Stats
 --- @field Resource Resource
+--- @field Spell Spell
 
 --- @type table< string, Settings >
 _V.Hub = {}
@@ -96,10 +101,14 @@ _V.NPC = {
 --- @field Casting string
 --- @field Stats Stats
 --- @field OldStats Stats
+--- @field Resource Resource
 --- @field OldResource Resource
+--- @field Spell Spell
+--- @field OldSpell Spell
 --- @field AC AC
 --- @field Health Health
 --- @field Modifiers Modifiers
+--- @field CleanBoosts boolean
 
 --- @type table< string, Entity >
 _V.Entities = {}

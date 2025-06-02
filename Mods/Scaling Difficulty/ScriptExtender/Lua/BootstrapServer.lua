@@ -1,10 +1,14 @@
 local _V = require( "Server/Variables" )
 local _F = require( "Server/Functions" )( _V )
+local _J = require( "Server/Json" )( _V )
 local _H = require( "Server/Hooks" )( _V, _F )
 
-if false then
-    require( "Server/Json" )( _V )
-end
+Ext.RegisterConsoleCommand(
+    "Blueprint",
+    function()
+        print( _J )
+    end
+)
 
 local Settings = {}
 

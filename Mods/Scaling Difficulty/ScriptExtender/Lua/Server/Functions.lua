@@ -53,13 +53,25 @@ return function( _V )
         return false
     end
 
+    _F.IsPlayer = function( ent, uuid )
+        return Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ] or ent.Classes and ent.Classes.Classes[ 1 ] and ent.Classes.Classes[ 1 ].ClassUUID ~= "00000000-0000-0000-0000-000000000000"
+    end
+
+    _F.IsEnemy = function( uuid )
+        for _,p in pairs( Osi.DB_Players:Get( nil ) ) do
+            if Osi.IsEnemy( uuid, p[ 1 ] ) == 1 then
+                return true
+            end
+        end
+        return false
+    end
+
     _F.AddNPC = function( ent )
         local eoc = ent.EocLevel
         local id = ent.Uuid
         if not eoc or not id then return end
 
         local uuid = id.EntityUuid
-        if Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ] then return end
 
         if not _V.Entities[ uuid ] then
             local stats = ent.Stats
@@ -71,7 +83,7 @@ return function( _V )
                 type = "Boss"
             elseif Osi.IsSummon( uuid ) == 1 then
                 type = "Summon"
-            elseif Osi.IsEnemy( uuid, Osi.GetHostCharacter() ) == 0 then
+            elseif _F.IsEnemy( uuid ) then
                 type = "Ally"
             end
 
@@ -86,7 +98,10 @@ return function( _V )
                 Physical = stats.Abilities[ 2 ] <= stats.Abilities[ 3 ] and "Dexterity" or "Strength",
                 Casting = tostring( stats.SpellCastingAbility ),
                 OldStats = _F.Default( "Stats" ),
+                Resource = _F.Default( "Resource" ),
                 OldResource = _F.Default( "Resource" ),
+                Spell = _F.Default( "Spell", true ),
+                OldSpell = _F.Default( "Spell" ),
                 AC = {
                     Type = false,
                     ACBonus = 0,
@@ -108,17 +123,18 @@ return function( _V )
                         end
                     )(),
                     Current = _F.Default( "Abilities" )
-                }
+                },
+                CleanBoosts = true
             }
 
             _F.UpdateNPC( uuid )
         end
     end
 
-    _F.Default = function( type )
+    _F.Default = function( type, string )
         local stat = {}
         for _,v in ipairs( _V[ type ] ) do
-            stat[ v ] = 0.0
+            stat[ v ] = string and "" or 0.0
         end
         return stat
     end
@@ -171,8 +187,7 @@ return function( _V )
             entity.OldStats[ k ] = stat
         end
 
-        stats.InitiativeBonus = stats.InitiativeBonus + entity.Stats.Initiative
-        if clean then stats.InitiativeBonus = stats.InitiativeBonus - entity.OldStats.Initiative end
+        stats.InitiativeBonus = _F.Whole( stats.InitiativeBonus + entity.Stats.Initiative - ( clean and entity.OldStats.Initiative or 0 ) )
         entity.OldStats.Initiative = entity.Stats.Initiative
 
         stats.ProficiencyBonus = 1 + math.floor( ( entity.LevelBase + entity.LevelChange ) / 2.0 )
@@ -225,24 +240,24 @@ return function( _V )
         local entity = _V.Entities[ uuid ]
         if not entity then return end
 
-        if entity.OldStats.DamageBonus ~= entity.Stats.DamageBonus then
+        if entity.CleanBoosts or entity.OldStats.DamageBonus ~= entity.Stats.DamageBonus then
             if entity.OldStats.DamageBonus ~= 0 then
                 Osi.RemoveBoosts( uuid, string.format( _V.Boosts.DamageBonus, entity.OldStats.DamageBonus ), 0, _V.Key, "" )
             end
 
-            if entity.Stats.DamageBonus ~= 0 then
+            if entity.CleanBoosts or entity.Stats.DamageBonus ~= 0 then
                 Osi.AddBoosts( uuid, string.format( _V.Boosts.DamageBonus, entity.Stats.DamageBonus ), _V.Key, "" )
             end
 
             entity.OldStats.DamageBonus = entity.Stats.DamageBonus
         end
 
-        if entity.OldStats.Attack ~= entity.Stats.Attack then
+        if entity.CleanBoosts or entity.OldStats.Attack ~= entity.Stats.Attack then
             if entity.OldStats.Attack ~= 0 then
                 Osi.RemoveBoosts( uuid, string.format( _V.Boosts.RollBonus, "Attack", entity.OldStats.Attack ), 0, _V.Key, "" )
             end
 
-            if entity.Stats.Attack ~= 0 then
+            if entity.CleanBoosts or entity.Stats.Attack ~= 0 then
                 Osi.AddBoosts( uuid, string.format( _V.Boosts.RollBonus, "Attack", entity.Stats.Attack ), _V.Key, "" )
             end
 
@@ -250,33 +265,47 @@ return function( _V )
         end
 
         for _,resource in ipairs( _V.Resource ) do
-            local amount = 0
-            if resource:find( "SpellSlot" ) then
-                local elvl = entity.LevelBase + entity.LevelChange
-                for _,v in ipairs( _F.Split( entity.Hub.Resource[ resource ], ',' ) ) do
-                    if tonumber( v ) and elvl >= tonumber( v ) then
-                        amount = amount + 1
-                    end
-                end
-            else
-                amount = entity.Hub.Resource[ resource ]
-            end
+            local amount = entity.Resource[ resource ]
 
-            if entity.OldResource[ resource ] ~= amount then
-                local level = resource:match( "Level([%d])" ) or 0
-                local boost = resource:gsub( "Level[%d]", "" )
-
+            if entity.CleanBoosts or entity.OldResource[ resource ] ~= amount then
                 if entity.OldResource[ resource ] ~= 0 then
-                    Osi.RemoveBoosts( uuid, string.format( _V.Boosts.Resource, boost, entity.OldResource[ resource ], level ), 0, _V.Key, "" )
+                    Osi.RemoveBoosts( uuid, string.format( _V.Boosts.Resource, resource, entity.OldResource[ resource ], 0 ), 0, _V.Key, "" )
                 end
 
-                if amount ~= 0 then
-                    Osi.AddBoosts( uuid, string.format( _V.Boosts.Resource, boost, amount, level ), _V.Key, "" )
+                if entity.CleanBoosts or amount ~= 0 then
+                    Osi.AddBoosts( uuid, string.format( _V.Boosts.Resource, resource, amount, 0 ), _V.Key, "" )
                 end
 
                 entity.OldResource[ resource ] = amount
             end
         end
+
+        for _,spell in ipairs( _V.Spell ) do
+            local amount = 0
+            local elvl = entity.LevelBase + entity.LevelChange
+            for _,v in ipairs( _F.Split( entity.Spell[ spell ], ',' ) ) do
+                if tonumber( v ) and elvl >= tonumber( v ) then
+                    amount = amount + 1
+                end
+            end
+
+            if entity.CleanBoosts or entity.OldSpell[ spell ] ~= amount then
+                local level = spell:match( "Level([%d])" ) or 0
+                local boost = spell:gsub( "Level[%d]", "" )
+
+                if entity.OldSpell[ spell ] ~= 0 then
+                    Osi.RemoveBoosts( uuid, string.format( _V.Boosts.Resource, boost, entity.OldSpell[ spell ], level ), 0, _V.Key, "" )
+                end
+
+                if entity.CleanBoosts or amount ~= 0 then
+                    Osi.AddBoosts( uuid, string.format( _V.Boosts.Resource, boost, amount, level ), _V.Key, "" )
+                end
+
+                entity.OldSpell[ spell ] = amount
+            end
+        end
+
+        entity.CleanBoosts = false
     end
 
     _F.UpdateNPC = function( uuid )
@@ -291,14 +320,14 @@ return function( _V )
             local ent = Ext.Entity.Get( uuid )
             if not ent or not entity.Hub then _V.Entities[ uuid ] = nil return end
 
-            local undo = Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ]
+            local undo = _F.IsPlayer( ent, uuid )
 
             if entity.Type ~= "Summon" then
-                local enemy = Osi.IsEnemy( uuid, Osi.GetHostCharacter() )
-                if entity.Type ~= "Ally" and enemy == 0 then
+                local enemy = _F.IsEnemy( uuid )
+                if entity.Type ~= "Ally" and not enemy then
                     entity.Type = "Ally"
                     entity.Hub = _V.Hub[ entity.Type ]
-                elseif entity.Type == "Ally" and enemy == 1 then
+                elseif entity.Type == "Ally" and enemy then
                     entity.Type = _F.IsBoss( uuid ) == 1 and "Boss" or "Enemy"
                     entity.Hub = _V.Hub[ entity.Type ]
                 end
@@ -319,8 +348,16 @@ return function( _V )
 
             entity.LevelChange = undo and 0 or level - entity.LevelBase
 
-            for stat,_ in pairs( entity.Stats ) do
+            for _,stat in ipairs( _V.Stats ) do
                 entity.Stats[ stat ] = undo and 0 or entity.Hub.Bonus[ stat ] + entity.Hub.Leveling[ stat ] * entity.LevelChange
+            end
+
+            for _,resource in ipairs( _V.Resource ) do
+                entity.Resource[ resource ] = undo and 0 or entity.Hub.Resource[ resource ]
+            end
+
+            for _,spell in ipairs( _V.Spell ) do
+                entity.Spell[ spell ] = undo and "" or entity.Hub.Spell[ spell ]
             end
 
             _F.SetAbilities( ent, true )

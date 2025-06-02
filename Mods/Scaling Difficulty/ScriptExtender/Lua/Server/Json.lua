@@ -36,7 +36,8 @@ return function( _V )
                                 "General",
                                 "Leveling",
                                 "Bonus",
-                                "Resource"
+                                "Resource",
+                                "Spell",
                             }
                         }
                     }
@@ -49,7 +50,7 @@ return function( _V )
         Downscaling = { "Downlevel NPC's which are above the Party Level.", "checkbox" },
         LevelBonus = { "Scale NPC's to Party Level + X.\nSet to a large negative with 'Downscaling' disabled to stop level scaling.", "int" },
         HP = { "Increase HP by X." },
-        PercentHP = { "Increase HP by X%.\n0.05 means each enemy recieves a 5% max health bonus.", "float" },
+        PercentHP = { "Increase HP by X%.\n0.05 means each NPC recieves a 5% max health bonus.", "float" },
         AC = { "Increase AC by X." },
         Attack = { "Increase Attack Rolls by X." },
         DamageBonus = { "Increase Damage by X." },
@@ -63,7 +64,7 @@ return function( _V )
         Wisdom = { "Increase Wisdom Ability Score by X." },
         Charisma = { "Increase Charisma Ability Score by X." },
         LevelingHP = { "Increase HP by X + Constitution Modifier each scaled level." },
-        LevelingPercentHP = { "Increase HP by X% each scaled level.\n0.05 means each enemy recieves a 5% max health bonus.", "float" },
+        LevelingPercentHP = { "Increase HP by X% each scaled level.\n0.05 means each NPC recieves a 5% max health bonus.", "float" },
         LevelingAC = { "Increase AC by X each scaled level." },
         LevelingAttack = { "Increase Attack Rolls by X each scaled level." },
         LevelingDamageBonus = { "Increase Damage by X each scaled level." },
@@ -105,8 +106,8 @@ return function( _V )
         LevelingCasting = 1.25,
         LevelingPhysical = 1.25,
         LevelingBossHP = 12.0,
-        LevelingBossCasting = 1.6,
-        LevelingBossPhysical = 1.6,
+        LevelingBossCasting = 1.5,
+        LevelingBossPhysical = 1.5,
         SpellSlotLevel1 = "1,1,2,3",
         SpellSlotLevel2 = "3,3,4",
         SpellSlotLevel3 = "5,5,6",
@@ -192,5 +193,5 @@ return function( _V )
         end
     end
 
-    print( table.concat( string ) )
+    return table.concat( string )
 end
