@@ -21,12 +21,22 @@ return function( _V )
         return ret
     end
 
+    _F.UUID = function( target )
+        if type( target ) == "userdata" and target.Uuid then
+            return string.sub( target.Uuid.EntityUuid, -36 )
+        elseif type( target ) == "string" then
+            return string.sub( target, -36 )
+        end
+    end
+
     _F.IsBoss = function( ent )
-        if not ent.Uuid then
+        local uuid = _F.UUID( ent )
+
+        if not uuid then
             return false
         end
 
-        if Osi.IsBoss( ent.Uuid.EntityUuid ) == 1 then
+        if Osi.IsBoss( uuid ) == 1 then
             return true
         end
 
@@ -54,7 +64,7 @@ return function( _V )
     end
 
     _F.IsPlayer = function( ent, uuid )
-        return Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ] or ent.Classes and ent.Classes.Classes[ 1 ] and ent.Classes.Classes[ 1 ].ClassUUID ~= "00000000-0000-0000-0000-000000000000"
+        return Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ] or ent and ent.Classes and ent.Classes.Classes[ 1 ] and ent.Classes.Classes[ 1 ].ClassUUID ~= "00000000-0000-0000-0000-000000000000"
     end
 
     _F.IsEnemy = function( uuid )
@@ -68,10 +78,8 @@ return function( _V )
 
     _F.AddNPC = function( ent )
         local eoc = ent.EocLevel
-        local id = ent.Uuid
-        if not eoc or not id then return end
-
-        local uuid = id.EntityUuid
+        local uuid = _F.UUID( ent )
+        if not eoc or not uuid then return end
 
         if not _V.Entities[ uuid ] then
             local stats = ent.Stats
@@ -140,7 +148,9 @@ return function( _V )
     end
 
     _F.SetAC = function( ent, clean, type )
-        local uuid = ent.Uuid.EntityUuid
+        local uuid = _F.UUID( ent )
+        if not uuid then return end
+
         local res = ent.Resistances
         local entity = _V.Entities[ uuid ]
         if not entity then return end
@@ -167,7 +177,9 @@ return function( _V )
     end
 
     _F.SetAbilities = function( ent, clean )
-        local uuid = ent.Uuid.EntityUuid
+        local uuid = _F.UUID( ent )
+        if not uuid then return end
+
         local stats = ent.Stats
         local entity = _V.Entities[ uuid ]
         if not entity then return end
@@ -197,8 +209,10 @@ return function( _V )
     end
 
     _F.SetHealth = function( ent, index, clean )
+        local uuid = _F.UUID( ent )
+        if not uuid then return end
+
         local health = ent.Health
-        local uuid = ent.Uuid.EntityUuid
         local entity = _V.Entities[ uuid ]
         if not entity then return end
 
@@ -226,8 +240,10 @@ return function( _V )
     end
 
     _F.SetLevel = function( ent )
+        local uuid = _F.UUID( ent )
+        if not uuid then return end
+
         local eoc = ent.EocLevel
-        local uuid = ent.Uuid.EntityUuid
         local entity = _V.Entities[ uuid ]
         if not entity then return end
 
@@ -309,16 +325,18 @@ return function( _V )
     end
 
     _F.UpdateNPC = function( uuid )
+        uuid = _F.UUID( uuid )
+
         if not uuid then
             for id,_ in pairs( _V.Entities ) do
                 _F.UpdateNPC( id )
             end
         else
-            local entity = _V.Entities[ uuid ]
-            if not entity then _F.AddNPC( uuid ) return end
-
             local ent = Ext.Entity.Get( uuid )
-            if not ent or not entity.Hub then _V.Entities[ uuid ] = nil return end
+            if not ent then _V.Entities[ uuid ] = nil return end
+
+            local entity = _V.Entities[ uuid ]
+            if not entity or not entity.Hub then _F.AddNPC( uuid ) return end
 
             local undo = _F.IsPlayer( ent, uuid )
 

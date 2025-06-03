@@ -5,7 +5,7 @@ return function( _V, _F )
         function( e )
             if e.FromState ~= "LoadLevel" and e.ToState ~= "Sync" then return end
 
-            Ext.Osiris.RegisterListener( "LeveledUp", 1, "after", function( c ) if Osi.DB_Players:Get( c )[ 1 ] then _F.UpdateNPC() end end )
+            Ext.Osiris.RegisterListener( "LeveledUp", 1, "after", function( c ) if Osi.DB_Players:Get( _F.UUID( c ) )[ 1 ] then _F.UpdateNPC() end end )
 
             _V.Entities = {}
             for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
@@ -18,8 +18,9 @@ return function( _V, _F )
                 "after",
                 function()
                     for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
-                        if ent.Uuid then
-                            Osi.AddBoosts( ent.Uuid.EntityUuid, "IncreaseMaxHP( 0 )", "", "" )
+                        local uuid = _F.UUID( ent )
+                        if uuid then
+                            Osi.AddBoosts( uuid, "IncreaseMaxHP( 0 )", "", "" )
                         end
                     end
                 end
@@ -38,8 +39,8 @@ return function( _V, _F )
                 "TurnStarted",
                 1,
                 "after",
-                function( uuid )
-                    _F.UpdateNPC( uuid )
+                function( c )
+                    _F.UpdateNPC( _F.UUID( c ) )
                 end
             )
 
