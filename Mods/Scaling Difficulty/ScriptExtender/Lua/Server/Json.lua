@@ -101,13 +101,17 @@ return function( _V )
     }
 
     local default = {
-        LevelingHP = 8.0,
-        LevelingInitiative = 1.0,
-        LevelingCasting = 1.25,
-        LevelingPhysical = 1.25,
         LevelingBossHP = 12.0,
-        LevelingBossCasting = 1.5,
-        LevelingBossPhysical = 1.5,
+        LevelingHP = 8.0,
+        LevelingInitiative = 0.5,
+        LevelingCasting = 0.5,
+        LevelingPhysical = 0.5,
+        LevelingStrength = 0.33,
+        LevelingDexterity = 0.33,
+        LevelingConstitution = 0.25,
+        LevelingIntelligence = 0.33,
+        LevelingWisdom = 0.33,
+        LevelingCharisma = 0.33,
         SpellSlotLevel1 = "1,1,2,3",
         SpellSlotLevel2 = "3,3,4",
         SpellSlotLevel3 = "5,5,6",

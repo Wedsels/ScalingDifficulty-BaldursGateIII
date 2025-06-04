@@ -336,7 +336,7 @@ return function( _V )
             if not ent then _V.Entities[ uuid ] = nil return end
 
             local entity = _V.Entities[ uuid ]
-            if not entity or not entity.Hub then _F.AddNPC( uuid ) return end
+            if not entity or not entity.Hub then _F.AddNPC( ent ) return end
 
             local undo = _F.IsPlayer( ent, uuid )
 
