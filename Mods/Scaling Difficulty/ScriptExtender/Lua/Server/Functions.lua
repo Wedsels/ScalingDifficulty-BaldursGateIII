@@ -254,12 +254,12 @@ return function( _V )
         ent:Replicate( "EocLevel" )
     end
 
-    _F.SetBoosts = function( uuid )
+    _F.SetBoosts = function( uuid, force )
         local entity = _V.Entities[ uuid ]
         if not entity then return end
 
-        if entity.CleanBoosts or entity.OldStats.DamageBonus ~= entity.Stats.DamageBonus then
-            if entity.OldStats.DamageBonus ~= 0 then
+        if force or entity.CleanBoosts or entity.OldStats.DamageBonus ~= entity.Stats.DamageBonus then
+            if force or entity.OldStats.DamageBonus ~= 0 then
                 Osi.RemoveBoosts( uuid, string.format( _V.Boosts.DamageBonus, entity.OldStats.DamageBonus ), 0, _V.Key, "" )
             end
 
@@ -270,8 +270,8 @@ return function( _V )
             entity.OldStats.DamageBonus = entity.Stats.DamageBonus
         end
 
-        if entity.CleanBoosts or entity.OldStats.Attack ~= entity.Stats.Attack then
-            if entity.OldStats.Attack ~= 0 then
+        if force or entity.CleanBoosts or entity.OldStats.Attack ~= entity.Stats.Attack then
+            if force or entity.OldStats.Attack ~= 0 then
                 Osi.RemoveBoosts( uuid, string.format( _V.Boosts.RollBonus, "Attack", entity.OldStats.Attack ), 0, _V.Key, "" )
             end
 
@@ -285,8 +285,8 @@ return function( _V )
         for _,resource in ipairs( _V.Resource ) do
             local amount = entity.Resource[ resource ]
 
-            if entity.CleanBoosts or entity.OldResource[ resource ] ~= amount then
-                if entity.OldResource[ resource ] ~= 0 then
+            if force or entity.CleanBoosts or entity.OldResource[ resource ] ~= amount then
+                if force or entity.OldResource[ resource ] ~= 0 then
                     Osi.RemoveBoosts( uuid, string.format( _V.Boosts.Resource, resource, entity.OldResource[ resource ], 0 ), 0, _V.Key, "" )
                 end
 
@@ -307,11 +307,11 @@ return function( _V )
                 end
             end
 
-            if entity.CleanBoosts or entity.OldSpell[ spell ] ~= amount then
+            if force or entity.CleanBoosts or entity.OldSpell[ spell ] ~= amount then
                 local level = spell:match( "Level([%d])" ) or 0
                 local boost = spell:gsub( "Level[%d]", "" )
 
-                if entity.OldSpell[ spell ] ~= 0 then
+                if force or entity.OldSpell[ spell ] ~= 0 then
                     Osi.RemoveBoosts( uuid, string.format( _V.Boosts.Resource, boost, entity.OldSpell[ spell ], level ), 0, _V.Key, "" )
                 end
 
@@ -323,7 +323,10 @@ return function( _V )
             end
         end
 
-        entity.CleanBoosts = false
+        if entity.CleanBoosts then
+            entity.CleanBoosts = false
+            Ext.Timer.WaitFor( 500, function() _F.SetBoosts( uuid, true ) end )
+        end
     end
 
     _F.UpdateNPC = function( uuid )
