@@ -63,8 +63,8 @@ return function( _V )
         return false
     end
 
-    _F.IsPlayer = function( ent, uuid )
-        return Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ] or ent and ent.Classes and ent.Classes.Classes[ 1 ] and ent.Classes.Classes[ 1 ].ClassUUID ~= "00000000-0000-0000-0000-000000000000"
+    _F.IsPlayer = function( uuid )
+        return Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ]
     end
 
     _F.IsEnemy = function( uuid )
@@ -74,6 +74,14 @@ return function( _V )
             end
         end
         return false
+    end
+
+    _F.Archetype = function( ent, uuid )
+        if _F.IsPlayer( uuid ) then return end
+        if _F.IsBoss( ent ) then return "Boss" end
+        if Osi.IsSummon( uuid ) == 1 then return "Summon" end
+        if _F.IsEnemy then return "Enemy" end
+        return "Ally"
     end
 
     _F.AddNPC = function( ent )
@@ -86,14 +94,8 @@ return function( _V )
             local health = ent.Health
             if not stats or not health then return end
 
-            local type = "Enemy"
-            if _F.IsBoss( uuid ) == 1 then
-                type = "Boss"
-            elseif Osi.IsSummon( uuid ) == 1 then
-                type = "Summon"
-            elseif _F.IsEnemy( uuid ) then
-                type = "Ally"
-            end
+            local type = _F.Archetype( ent, uuid )
+            if not type then return end
 
             _V.Entities[ uuid ] = {
                 Scaled = false,
@@ -338,17 +340,11 @@ return function( _V )
             local entity = _V.Entities[ uuid ]
             if not entity or not entity.Hub then _F.AddNPC( ent ) return end
 
-            local undo = _F.IsPlayer( ent, uuid )
-
-            if entity.Type ~= "Summon" then
-                local enemy = _F.IsEnemy( uuid )
-                if entity.Type ~= "Ally" and not enemy then
-                    entity.Type = "Ally"
-                    entity.Hub = _V.Hub[ entity.Type ]
-                elseif entity.Type == "Ally" and enemy then
-                    entity.Type = _F.IsBoss( uuid ) == 1 and "Boss" or "Enemy"
-                    entity.Hub = _V.Hub[ entity.Type ]
-                end
+            local type = _F.Archetype( ent, uuid )
+            local undo = not type
+            if type then
+                entity.Type = type
+                entity.Hub = _V.Hub[ type ]
             end
 
             local party = 0
@@ -382,8 +378,6 @@ return function( _V )
             _F.SetHealth( ent, 3, true )
             _F.SetLevel( ent )
             _F.SetBoosts( uuid )
-
-            if undo then _V.Entities[ uuid ] = nil end
         end
     end
 
