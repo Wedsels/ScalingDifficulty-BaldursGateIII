@@ -263,11 +263,13 @@ return function( _V )
                 Osi.RemoveBoosts( uuid, string.format( _V.Boosts.DamageBonus, entity.OldStats.DamageBonus ), 0, _V.Key, "" )
             end
 
-            if entity.CleanBoosts or entity.Stats.DamageBonus ~= 0 then
-                Osi.AddBoosts( uuid, string.format( _V.Boosts.DamageBonus, entity.Stats.DamageBonus ), _V.Key, "" )
+            local stat = _F.Whole( entity.Stats.DamageBonus )
+
+            if entity.CleanBoosts or stat ~= 0 then
+                Osi.AddBoosts( uuid, string.format( _V.Boosts.DamageBonus, stat ), _V.Key, "" )
             end
 
-            entity.OldStats.DamageBonus = entity.Stats.DamageBonus
+            entity.OldStats.DamageBonus = stat
         end
 
         if force or entity.CleanBoosts or entity.OldStats.Attack ~= entity.Stats.Attack then
@@ -275,15 +277,17 @@ return function( _V )
                 Osi.RemoveBoosts( uuid, string.format( _V.Boosts.RollBonus, "Attack", entity.OldStats.Attack ), 0, _V.Key, "" )
             end
 
-            if entity.CleanBoosts or entity.Stats.Attack ~= 0 then
-                Osi.AddBoosts( uuid, string.format( _V.Boosts.RollBonus, "Attack", entity.Stats.Attack ), _V.Key, "" )
+            local stat = _F.Whole( entity.Stats.Attack )
+
+            if entity.CleanBoosts or stat ~= 0 then
+                Osi.AddBoosts( uuid, string.format( _V.Boosts.RollBonus, "Attack", stat ), _V.Key, "" )
             end
 
-            entity.OldStats.Attack = entity.Stats.Attack
+            entity.OldStats.Attack = stat
         end
 
         for _,resource in ipairs( _V.Resource ) do
-            local amount = entity.Resource[ resource ]
+            local amount = _F.Whole( entity.Resource[ resource ] )
 
             if force or entity.CleanBoosts or entity.OldResource[ resource ] ~= amount then
                 if force or entity.OldResource[ resource ] ~= 0 then

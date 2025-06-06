@@ -20,7 +20,8 @@ return function( _V, _F )
                     for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
                         local uuid = _F.UUID( ent )
                         if uuid then
-                            Osi.AddBoosts( uuid, "IncreaseMaxHP( 0 )", "", "" )
+                            Osi.AddBoosts( uuid, "IncreaseMaxHP( 0 )", _V.Key, "" )
+                            Ext.Timer.WaitFor( 500, function() Osi.RemoveBoosts( uuid, "IncreaseMaxHP( 0 )", 0, _V.Key, "" ) end )
                         end
                     end
                 end
