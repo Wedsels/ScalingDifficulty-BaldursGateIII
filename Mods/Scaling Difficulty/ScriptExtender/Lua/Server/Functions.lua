@@ -52,6 +52,10 @@ return function( _V )
             end
         end
 
+        if ent.DisplayName and ent.DisplayName.Title.Handle.Handle ~= "ls::TranslatedStringRepository::s_HandleUnknown" then
+            return true
+        end
+
         if ent.ActionResources and ent.ActionResources.Resources and
             (
                 ent.ActionResources.Resources[ "732e23a8-bb1d-4bec-a4df-1dd0e03b56c4" ] or
@@ -73,14 +77,13 @@ return function( _V )
                 return true
             end
         end
-        return false
     end
 
     _F.Archetype = function( ent, uuid )
         if _F.IsPlayer( uuid ) then return end
         if _F.IsBoss( ent ) then return "Boss" end
         if Osi.IsSummon( uuid ) == 1 then return "Summon" end
-        if _F.IsEnemy then return "Enemy" end
+        if _F.IsEnemy( uuid ) then return "Enemy" end
         return "Ally"
     end
 
