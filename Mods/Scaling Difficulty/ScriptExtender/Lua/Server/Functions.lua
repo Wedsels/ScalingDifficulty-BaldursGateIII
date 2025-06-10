@@ -196,7 +196,11 @@ return function( _V )
             stat = _F.Whole( stat )
 
             stats.Abilities[ v ] = stats.Abilities[ v ] + stat
-            if clean then stats.Abilities[ v ] = stats.Abilities[ v ] - entity.OldStats[ k ] end
+            if clean then
+                stats.Abilities[ v ] = stats.Abilities[ v ] - entity.OldStats[ k ]
+            else
+                entity.Modifiers.Original[ k ] = stats.AbilityModifiers[ v ]
+            end
 
             stats.AbilityModifiers[ v ] = math.floor( ( stats.Abilities[ v ] - 10.0 ) / 2.0 )
             entity.Modifiers.Current[ k ] = stats.AbilityModifiers[ v ]
@@ -221,13 +225,13 @@ return function( _V )
         local entity = _V.Entities[ uuid ]
         if not entity then return end
 
-        if index ~= 1 and entity.Health and health.MaxHp ~= entity.Health.MaxHp then
-            health.Hp = entity.Health.Hp
-        elseif index == 1 then
+        if ( index == 1 or index == -1 ) and health.Hp ~= entity.Health.Hp then
             entity.Health.Percent = health.Hp / math.max( 1, health.MaxHp )
             entity.Health.Hp = health.Hp
 
             return
+        elseif index ~= 1 and health.MaxHp ~= entity.Health.MaxHp then
+            health.Hp = entity.Health.Hp
         end
 
         if index == 59 or index == 3 or index == 2 then
