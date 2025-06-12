@@ -225,11 +225,11 @@ return function( _V )
         local entity = _V.Entities[ uuid ]
         if not entity then return end
 
-        if ( index == 1 or index == -1 ) and health.Hp ~= entity.Health.Hp then
+        _F.SetAbilities( ent, true )
+
+        if ( index == 59 or index == 1 or index == -1  ) and health.Hp ~= entity.Health.Hp then
             entity.Health.Percent = health.Hp / math.max( 1, health.MaxHp )
             entity.Health.Hp = health.Hp
-
-            return
         elseif index ~= 1 and health.MaxHp ~= entity.Health.MaxHp then
             health.Hp = entity.Health.Hp
         end
@@ -388,7 +388,6 @@ return function( _V )
                 entity.Spell[ spell ] = undo and "" or entity.Hub.Spell[ spell ]
             end
 
-            _F.SetAbilities( ent, true )
             _F.SetHealth( ent, 3, true )
             _F.SetLevel( ent )
             _F.SetBoosts( uuid )
