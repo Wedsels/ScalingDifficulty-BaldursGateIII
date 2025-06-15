@@ -87,6 +87,16 @@ return function( _V )
         return "Ally"
     end
 
+    _F.GetEntity = function( ent )
+        local uuid = _F.UUID( ent )
+        if not uuid then return end
+
+        local entity = _V.Entities[ uuid ]
+        if not entity then return end
+
+        return uuid, entity
+    end
+
     _F.AddNPC = function( ent )
         local eoc = ent.EocLevel
         local uuid = _F.UUID( ent )
@@ -139,9 +149,9 @@ return function( _V )
                 },
                 CleanBoosts = true
             }
-
-            _F.UpdateNPC( uuid )
         end
+
+        _F.UpdateNPC( uuid )
     end
 
     _F.Default = function( type, string )
@@ -153,12 +163,10 @@ return function( _V )
     end
 
     _F.SetAC = function( ent, clean, type )
-        local uuid = _F.UUID( ent )
-        if not uuid then return end
+        local uuid, entity = _F.GetEntity( ent )
+        if not entity then return end
 
         local res = ent.Resistances
-        local entity = _V.Entities[ uuid ]
-        if not entity then return end
 
         local mod = entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity
 
@@ -182,12 +190,10 @@ return function( _V )
     end
 
     _F.SetAbilities = function( ent, clean )
-        local uuid = _F.UUID( ent )
-        if not uuid then return end
+        local uuid, entity = _F.GetEntity( ent )
+        if not entity then return end
 
         local stats = ent.Stats
-        local entity = _V.Entities[ uuid ]
-        if not entity then return end
 
         for k,v in pairs( _V.Abilities ) do
             local stat = entity.Stats[ k ]
@@ -218,18 +224,18 @@ return function( _V )
     end
 
     _F.SetHealth = function( ent, index, clean )
-        local uuid = _F.UUID( ent )
-        if not uuid then return end
+        local uuid, entity = _F.GetEntity( ent )
+        if not entity then return end
 
         local health = ent.Health
-        local entity = _V.Entities[ uuid ]
-        if not entity then return end
 
         _F.SetAbilities( ent, true )
 
-        if ( index == 59 or index == 1 or index == -1  ) and health.Hp ~= entity.Health.Hp then
-            entity.Health.Percent = health.Hp / math.max( 1, health.MaxHp )
-            entity.Health.Hp = health.Hp
+        if index == 59 or index == 2 or index == 1 or index == -1 then
+            if health.Hp ~= entity.Health.Hp then
+                entity.Health.Percent = health.Hp / math.max( 1, health.MaxHp )
+                entity.Health.Hp = health.Hp
+            end
         elseif index ~= 1 and health.MaxHp ~= entity.Health.MaxHp then
             health.Hp = entity.Health.Hp
         end
@@ -249,12 +255,10 @@ return function( _V )
     end
 
     _F.SetLevel = function( ent )
-        local uuid = _F.UUID( ent )
-        if not uuid then return end
+        local uuid, entity = _F.GetEntity( ent )
+        if not entity then return end
 
         local eoc = ent.EocLevel
-        local entity = _V.Entities[ uuid ]
-        if not entity then return end
 
         eoc.Level = entity.LevelBase + entity.LevelChange
 
@@ -262,7 +266,7 @@ return function( _V )
     end
 
     _F.SetBoosts = function( uuid, force )
-        local entity = _V.Entities[ uuid ]
+        local uuid, entity = _F.GetEntity( Ext.Entity.Get( uuid ) )
         if not entity then return end
 
         if force or entity.CleanBoosts or entity.OldStats.DamageBonus ~= entity.Stats.DamageBonus then
