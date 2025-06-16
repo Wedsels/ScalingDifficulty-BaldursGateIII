@@ -67,8 +67,9 @@ return function( _V )
         return false
     end
 
-    _F.IsPlayer = function( uuid )
-        return Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ]
+    _F.IsPlayer = function( ent )
+        local uuid = _F.UUID( ent )
+        return not ent.Bound and ent.Stats or Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ]
     end
 
     _F.IsEnemy = function( uuid )
@@ -80,7 +81,7 @@ return function( _V )
     end
 
     _F.Archetype = function( ent, uuid )
-        if _F.IsPlayer( uuid ) then return end
+        if _F.IsPlayer( ent ) then return end
         if _F.IsBoss( ent ) then return "Boss" end
         if Osi.IsSummon( uuid ) == 1 then return "Summon" end
         if _F.IsEnemy( uuid ) then return "Enemy" end
@@ -133,7 +134,11 @@ return function( _V )
                 Health = {
                     Hp = health.Hp,
                     MaxHp = math.max( 1, health.MaxHp ),
-                    Percent = health.Hp / math.max( 1, health.MaxHp )
+                    Percent = health.Hp / math.max( 1, health.MaxHp ),
+                    Transformed = false,
+                    TransformedHp = 0,
+                    TransformedMaxHp = 0,
+                    TransformedPercent = 0
                 },
                 Modifiers = {
                     Original = (
@@ -162,37 +167,29 @@ return function( _V )
         return stat
     end
 
-    _F.SetAC = function( ent, clean, type )
+    _F.SetAC = function( ent, index, type )
         local uuid, entity = _F.GetEntity( ent )
-        if not entity then return end
+        if not entity or index == -1 then return end
 
+        local clean = index ~= 4
         local res = ent.Resistances
-
-        local mod = entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity
-
-        local ac = 0
-        if type then
-            ac = clean and entity.Stats.AC + mod or mod
-        else
-            ac = entity.Stats.AC
-        end
-        ac = _F.Whole( ac )
+        local ac = _F.Whole( entity.Stats.AC + ( ( clean ) and entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity or 0 ) )
 
         res.AC = res.AC + ac
         if clean then
-            res.AC = res.AC - _F.Whole( type and entity.AC.ACBonus + entity.AC.ACModifier or entity.AC.ACBonus )
+            res.AC = res.AC - entity.OldStats.AC
         end
 
-        entity.AC.Type = type
-        entity.AC.ACBonus = entity.Stats.AC
-        entity.AC.ACModifier = entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity
+        entity.OldStats.AC = entity.Stats.AC + entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity
+
         ent:Replicate( "Resistances" )
     end
 
-    _F.SetAbilities = function( ent, clean )
+    _F.SetAbilities = function( ent, index )
         local uuid, entity = _F.GetEntity( ent )
         if not entity then return end
 
+        local clean = index ~= 79
         local stats = ent.Stats
 
         for k,v in pairs( _V.Abilities ) do
@@ -219,19 +216,38 @@ return function( _V )
 
         stats.ProficiencyBonus = 1 + math.floor( ( entity.LevelBase + entity.LevelChange ) / 2.0 )
 
+        if not clean then
+            ent.Resistances.AC = ent.Resistances.AC + entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity
+        end
+
         ent:Replicate( "Stats" )
-        _F.SetAC( ent, clean, true )
     end
 
-    _F.SetHealth = function( ent, index, clean )
+    _F.SetHealth = function( ent, index )
         local uuid, entity = _F.GetEntity( ent )
         if not entity then return end
 
         local health = ent.Health
 
-        _F.SetAbilities( ent, true )
+        if index == 59 then
+            _F.SetAbilities( ent, 79 )
+            _F.SetAC( ent, 4 )
 
-        if index == 59 or index == 2 or index == 1 or index == -1 then
+            if entity.Health.Transformed then
+                entity.Health.Hp = entity.Health.TransformedHp
+                entity.Health.MaxHp = entity.Health.TransformedMaxHp
+                entity.Health.Percent = entity.Health.TransformedPercent
+            else
+                entity.Health.TransformedHp = entity.Health.Hp
+                entity.Health.TransformedMaxHp = entity.Health.MaxHp
+                entity.Health.TransformedPercent = entity.Health.Percent
+
+                entity.Health.Hp = health.Hp
+                entity.Health.Percent = health.Hp / math.max( 1, health.MaxHp )
+            end
+
+            entity.Health.Transformed = not entity.Health.Transformed
+        elseif index == 1 or index == -1 then
             if health.Hp ~= entity.Health.Hp then
                 entity.Health.Percent = health.Hp / math.max( 1, health.MaxHp )
                 entity.Health.Hp = health.Hp
@@ -240,8 +256,8 @@ return function( _V )
             health.Hp = entity.Health.Hp
         end
 
-        if index == 59 or index == 3 or index == 2 then
-            if index == 59 or not clean then
+        if index == 59 or index == 3 or index == 2 or not index then
+            if index then
                 entity.Health.MaxHp = health.MaxHp
             end
 
@@ -265,8 +281,8 @@ return function( _V )
         ent:Replicate( "EocLevel" )
     end
 
-    _F.SetBoosts = function( uuid, force )
-        local uuid, entity = _F.GetEntity( Ext.Entity.Get( uuid ) )
+    _F.SetBoosts = function( ent, force )
+        local uuid, entity = _F.GetEntity( ent )
         if not entity then return end
 
         if force or entity.CleanBoosts or entity.OldStats.DamageBonus ~= entity.Stats.DamageBonus then
@@ -340,7 +356,7 @@ return function( _V )
 
         if entity.CleanBoosts then
             entity.CleanBoosts = false
-            Ext.Timer.WaitFor( 500, function() _F.SetBoosts( uuid, true ) end )
+            Ext.Timer.WaitFor( 500, function() _F.SetBoosts( ent, true ) end )
         end
     end
 
@@ -392,9 +408,11 @@ return function( _V )
                 entity.Spell[ spell ] = undo and "" or entity.Hub.Spell[ spell ]
             end
 
-            _F.SetHealth( ent, 3, true )
+            _F.SetAbilities( ent )
+            _F.SetAC( ent )
+            _F.SetHealth( ent )
             _F.SetLevel( ent )
-            _F.SetBoosts( uuid )
+            _F.SetBoosts( ent )
         end
     end
 

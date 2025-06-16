@@ -76,15 +76,14 @@ _V.NPC = {
     Boss = true,
 }
 
---- @class AC
---- @field Type boolean
---- @field ACBonus number
---- @field ACModifier number
-
 --- @class Health
 --- @field Hp number
 --- @field MaxHp number
 --- @field Percent number
+--- @field Transformed boolean
+--- @field TransformedHp number
+--- @field TransformedMaxHp number
+--- @field TransformedPercent number
 
 --- @class Modifiers
 --- @field Original Stats
@@ -105,7 +104,6 @@ _V.NPC = {
 --- @field OldResource Resource
 --- @field Spell Spell
 --- @field OldSpell Spell
---- @field AC AC
 --- @field Health Health
 --- @field Modifiers Modifiers
 --- @field CleanBoosts boolean
