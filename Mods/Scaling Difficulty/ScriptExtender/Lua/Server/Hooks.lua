@@ -5,6 +5,81 @@ return function( _V, _F )
         function( e )
             if e.FromState ~= "LoadLevel" or e.ToState ~= "Sync" then return end
 
+            local modvar = Ext.Vars.GetModVariables( ModuleUUID )
+            if not modvar.Seed then
+                modvar.Seed = math.random( math.maxinteger )
+            end
+            _V.Seed = modvar.Seed
+
+            local Settings = {}
+
+            local default = Ext.Json.Parse( Ext.IO.LoadFile( "Mods/Scaling Difficulty/MCM_blueprint.json", "data" ) )
+            for _,setting in pairs( default.Tabs[ 1 ].Settings ) do
+                Settings[ setting.Id ] = setting.Default
+            end
+
+            local function SetSettings()
+                for npc,_ in pairs( _V.NPC ) do
+                    _V.Hub[ npc ] = _V.Hub[ npc ] or {}
+                    for _,setting in ipairs( _V.Settings ) do
+                        _V.Hub[ npc ][ setting ] = _V.Hub[ npc ][ setting ] or {}
+
+                        for _,stat in ipairs( _V[ setting ] or _V.Stats ) do
+                            _V.Hub[ npc ][ setting ][ stat ] = Settings[ setting .. npc .. stat ]
+                        end
+                    end
+                end
+            end
+
+            SetSettings()
+
+            if MCM then
+                for setting,_ in pairs( Settings ) do
+                    local val = MCM.Get( setting )
+                    if val then
+                        Settings[ setting ] = val
+                    end
+                end
+                SetSettings()
+
+                local function split( str )
+                    local ret = {}
+
+                    for s in str:gmatch( "[A-Z][^A-Z]*" ) do
+                        if not ret[ 3 ] then
+                            table.insert( ret, s )
+                        else
+                            ret[ 3 ] = ret[ 3 ] .. s
+                        end
+                    end
+
+                    return ret
+                end
+
+                Ext.ModEvents.BG3MCM[ "MCM_Setting_Saved" ]:Subscribe(
+                    function( payload )
+                        if not payload or payload.modUUID ~= ModuleUUID or not payload.settingId then
+                            return
+                        end
+
+                        local s = split( payload.settingId )
+
+                        if _V.Hub[ s[ 2 ] ] and _V.Hub[ s[ 2 ] ][ s[ 1 ] ] then
+                            _V.Hub[ s[ 2 ] ][ s[ 1 ] ][ s[ 3 ] ] = payload.value
+                            _F.UpdateNPC()
+                        end
+                    end
+                )
+            end
+
+            for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
+                local uuid = _F.UUID( ent )
+                if uuid then
+                    Osi.AddBoosts( uuid, "IncreaseMaxHP( 0 )", _V.Key, "" )
+                    Ext.Timer.WaitFor( 500, function() Osi.RemoveBoosts( uuid, "IncreaseMaxHP( 0 )", 0, _V.Key, "" ) end )
+                end
+            end
+
             for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
                 _F.AddNPC( ent )
             end
@@ -16,17 +91,10 @@ return function( _V, _F )
         2,
         "after",
         function()
-            for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
-                local uuid = _F.UUID( ent )
-                if uuid then
-                    Osi.AddBoosts( uuid, "IncreaseMaxHP( 0 )", _V.Key, "" )
-                    Ext.Timer.WaitFor( 500, function() Osi.RemoveBoosts( uuid, "IncreaseMaxHP( 0 )", 0, _V.Key, "" ) end )
-                end
-            end
-
             Ext.Entity.OnCreate( "EocLevel", function( ent ) Ext.Timer.WaitFor( 500, function() _F.AddNPC( ent ) end ) end )
 
             Ext.Osiris.RegisterListener( "CombatStarted", 1, "after", function() _F.UpdateNPC() end )
+            Ext.Osiris.RegisterListener( "CombatEnded", 1, "after", function() _F.UpdateNPC() end )
             Ext.Osiris.RegisterListener( "LeveledUp", 1, "after", function( c ) if Osi.DB_Players:Get( _F.UUID( c ) )[ 1 ] then _F.UpdateNPC() end end )
 
             Ext.Osiris.RegisterListener( "TurnStarted", 1, "after", function( c ) if Osi.IsActive( _F.UUID( c ) ) ~= 1 then return end _F.UpdateNPC( _F.UUID( c ) ) end )

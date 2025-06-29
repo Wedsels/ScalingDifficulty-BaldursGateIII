@@ -11,6 +11,8 @@ return function( _V )
     end
 
     _F.Split = function( str, splt )
+        if type( str ) ~= "string" then return {} end
+
         local ret = {}
         if str == "" then
             return ret
@@ -27,6 +29,64 @@ return function( _V )
         elseif type( target ) == "string" then
             return string.sub( target, -36 )
         end
+    end
+
+    _F.RNG = function( seed )
+        local self = { seed = seed + _V.Seed }
+
+        setmetatable(
+            self,
+            {
+                __call = function( _, range, reroll )
+                    local roll = 0
+
+                    reroll = reroll or 1
+                    for _ = 1, reroll do
+                        self.seed = ( 1103515245 * self.seed + 12345 ) % 0x80000000
+                        local r = self.seed / 0x80000000
+                        if r > roll then
+                            roll = r
+                        end
+                    end
+                    local t = type( range )
+
+                    if t == "number" then
+                        return roll * range
+                    elseif t == "table" then
+                        return range[ math.floor( roll * #range + 1 ) ]
+                    end
+                end
+            }
+        )
+
+        return self
+    end
+
+    _F.Hash = function( str )
+        local h = 5381
+
+        for i = 1, #str do
+            h = h * 32 + h + str:byte( i )
+        end
+
+        return h
+    end
+
+    _F.GetClass = function( ent )
+        local class = {}
+        local uuid = _F.UUID( ent )
+        local book = ent.SpellBook and ent.SpellBook.Spells
+
+        if uuid and book then
+            for _,data in ipairs( book ) do
+                local spell = data.Id.Prototype
+                if _V.SpellLists[ spell ] then
+                    table.insert( class, _V.SpellLists[ spell ] )
+                end
+            end
+        end
+
+        return class
     end
 
     _F.IsBoss = function( ent )
@@ -112,6 +172,7 @@ return function( _V )
             if not type then return end
 
             _V.Entities[ uuid ] = {
+                Name = ent.ServerCharacter and ent.ServerCharacter.Template.Name or ent.Uuid.EntityUuid,
                 Scaled = false,
                 Type = type,
                 Hub = _V.Hub[ type ],
@@ -122,10 +183,9 @@ return function( _V )
                 Physical = stats.Abilities[ 2 ] <= stats.Abilities[ 3 ] and "Dexterity" or "Strength",
                 Casting = tostring( stats.SpellCastingAbility ),
                 OldStats = _F.Default( "Stats" ),
-                Resource = _F.Default( "Resource" ),
+                Resource = _F.Default( "Resource", true ),
                 OldResource = _F.Default( "Resource" ),
-                Spell = _F.Default( "Spell", true ),
-                OldSpell = _F.Default( "Spell" ),
+                OldSpells = 0,
                 AC = {
                     Type = false,
                     ACBonus = 0,
@@ -152,7 +212,8 @@ return function( _V )
                     )(),
                     Current = _F.Default( "Abilities" )
                 },
-                CleanBoosts = true
+                CleanBoosts = true,
+                Class = _F.GetClass( ent )
             }
         end
 
@@ -167,20 +228,67 @@ return function( _V )
         return stat
     end
 
+    _F.SetSpells = function( ent )
+        local uuid, entity = _F.GetEntity( ent )
+        if not entity or not next( entity.Class ) then return end
+
+        local num = entity.Hub.General.Enabled and _F.Whole( entity.Hub.General.Spells * ( entity.LevelBase + entity.LevelChange ) ) or 0
+        if num == entity.OldSpells then return end
+
+        local seed = _F.Hash( uuid )
+        local ran = _F.RNG( seed )
+
+        local spells = {}
+        local roll = ran( num, 2 )
+        for i = 1, roll do
+            spells[ i ] = ran( ran( ran( entity.Class ) ) )
+        end
+
+        local oldspells = {}
+        if entity.OldSpells then
+            ran = _F.RNG( seed )
+
+            roll = ran( entity.OldSpells, 2 )
+            for i = 1, roll do
+                oldspells[ i ] = ran( ran( ran( entity.Class ) ) )
+            end
+        end
+
+        for _,spell in ipairs( spells ) do
+            local match = false
+            for _,old in ipairs( oldspells ) do
+                match = old == spell
+                if match then break end
+            end
+            if not match then Osi.AddSpell( uuid, spell ) end
+        end
+
+        for _,old in ipairs( oldspells ) do
+            local match = false
+            for _,spell in ipairs( spells ) do
+                match = spell == old
+                if match then break end
+            end
+            if not match then Osi.RemoveSpell( uuid, old ) end
+        end
+
+        entity.OldSpells = num
+    end
+
     _F.SetAC = function( ent, index, type )
         local uuid, entity = _F.GetEntity( ent )
         if not entity or index == -1 then return end
 
         local clean = index ~= 4
         local res = ent.Resistances
-        local ac = _F.Whole( entity.Stats.AC + ( ( clean ) and entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity or 0 ) )
+        local ac = _F.Whole( entity.Stats.AC + ( clean and entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity or 0 ) )
 
         res.AC = res.AC + ac
         if clean then
             res.AC = res.AC - entity.OldStats.AC
         end
 
-        entity.OldStats.AC = entity.Stats.AC + entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity
+        entity.OldStats.AC = _F.Whole( entity.Stats.AC + entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity )
 
         ent:Replicate( "Resistances" )
     end
@@ -247,7 +355,7 @@ return function( _V )
             end
 
             entity.Health.Transformed = not entity.Health.Transformed
-        elseif index == 1 or index == -1 then
+        elseif index == 1 or index == -1 or Osi.IsActive( uuid ) ~= 1 then
             if health.Hp ~= entity.Health.Hp then
                 entity.Health.Percent = health.Hp / math.max( 1, health.MaxHp )
                 entity.Health.Hp = health.Hp
@@ -314,43 +422,29 @@ return function( _V )
         end
 
         for _,resource in ipairs( _V.Resource ) do
-            local amount = _F.Whole( entity.Resource[ resource ] )
-
-            if force or entity.CleanBoosts or entity.OldResource[ resource ] ~= amount then
-                if force or entity.OldResource[ resource ] ~= 0 then
-                    Osi.RemoveBoosts( uuid, string.format( _V.Boosts.Resource, resource, entity.OldResource[ resource ], 0 ), 0, _V.Key, "" )
+            if type( entity.Resource[ resource ] ) == "string" then
+                local amount = 0
+                local elvl = entity.LevelBase + entity.LevelChange
+                for _,v in ipairs( _F.Split( entity.Resource[ resource ], ',' ) ) do
+                    if tonumber( v ) and elvl >= tonumber( v ) then
+                        amount = amount + 1
+                    end
                 end
 
-                if entity.CleanBoosts or amount ~= 0 then
-                    Osi.AddBoosts( uuid, string.format( _V.Boosts.Resource, resource, amount, 0 ), _V.Key, "" )
+                if force or entity.CleanBoosts or entity.OldResource[ resource ] ~= amount then
+                    local level = resource:match( "Level([%d])" ) or 0
+                    local boost = resource:gsub( "Level[%d]", "" )
+
+                    if force or entity.OldResource[ resource ] ~= 0 then
+                        Osi.RemoveBoosts( uuid, string.format( _V.Boosts.Resource, boost, entity.OldResource[ resource ], level ), 0, _V.Key, "" )
+                    end
+
+                    if entity.CleanBoosts or amount ~= 0 then
+                        Osi.AddBoosts( uuid, string.format( _V.Boosts.Resource, boost, amount, level ), _V.Key, "" )
+                    end
+
+                    entity.OldResource[ resource ] = amount
                 end
-
-                entity.OldResource[ resource ] = amount
-            end
-        end
-
-        for _,spell in ipairs( _V.Spell ) do
-            local amount = 0
-            local elvl = entity.LevelBase + entity.LevelChange
-            for _,v in ipairs( _F.Split( entity.Spell[ spell ], ',' ) ) do
-                if tonumber( v ) and elvl >= tonumber( v ) then
-                    amount = amount + 1
-                end
-            end
-
-            if force or entity.CleanBoosts or entity.OldSpell[ spell ] ~= amount then
-                local level = spell:match( "Level([%d])" ) or 0
-                local boost = spell:gsub( "Level[%d]", "" )
-
-                if force or entity.OldSpell[ spell ] ~= 0 then
-                    Osi.RemoveBoosts( uuid, string.format( _V.Boosts.Resource, boost, entity.OldSpell[ spell ], level ), 0, _V.Key, "" )
-                end
-
-                if entity.CleanBoosts or amount ~= 0 then
-                    Osi.AddBoosts( uuid, string.format( _V.Boosts.Resource, boost, amount, level ), _V.Key, "" )
-                end
-
-                entity.OldSpell[ spell ] = amount
             end
         end
 
@@ -374,11 +468,11 @@ return function( _V )
             local entity = _V.Entities[ uuid ]
             if not entity or not entity.Hub then _F.AddNPC( ent ) return end
 
-            local type = _F.Archetype( ent, uuid )
-            local undo = not type
-            if type then
-                entity.Type = type
-                entity.Hub = _V.Hub[ type ]
+            local arch = _F.Archetype( ent, uuid )
+            local undo = not arch
+            if arch then
+                entity.Type = arch
+                entity.Hub = _V.Hub[ arch ]
             end
 
             local party = 0
@@ -389,23 +483,28 @@ return function( _V )
                 end
             end
 
-            local level = math.max( 0, party + entity.Hub.General.LevelBonus )
-            if level < entity.LevelBase and not entity.Hub.General.Downscaling then
+            local level = math.max( 0, party + ( entity.Hub.General.Enabled and entity.Hub.General.LevelBonus or 0 ) )
+            if level < entity.LevelBase and ( not entity.Hub.General.Enabled or not entity.Hub.General.Downscaling ) then
                 level = entity.LevelBase
             end
 
-            entity.LevelChange = undo and 0 or level - entity.LevelBase
+            entity.LevelChange = ( undo or not entity.Hub.Leveling.Enabled ) and 0 or level - entity.LevelBase
+
+            local ran = _F.RNG( _F.Hash( uuid ) )
 
             for _,stat in ipairs( _V.Stats ) do
-                entity.Stats[ stat ] = undo and 0 or entity.Hub.Bonus[ stat ] + entity.Hub.Leveling[ stat ] * entity.LevelChange
+                if type( entity.Hub.Bonus[ stat ] ) == "number" then
+                    entity.Stats[ stat ]
+                        = ( ( undo or not entity.Hub.Bonus.Enabled ) and 0 or entity.Hub.Bonus[ stat ] )
+                        + entity.Hub.Leveling[ stat ] * entity.LevelChange
+                        + ( ( undo or not entity.Hub.Variation.Enabled ) and 0 or ran( entity.Hub.Variation[ stat ] ) )
+                end
             end
 
             for _,resource in ipairs( _V.Resource ) do
-                entity.Resource[ resource ] = undo and 0 or entity.Hub.Resource[ resource ]
-            end
-
-            for _,spell in ipairs( _V.Spell ) do
-                entity.Spell[ spell ] = undo and "" or entity.Hub.Spell[ spell ]
+                if type( entity.Resource[ resource ] ) == "string" then
+                    entity.Resource[ resource ] = ( undo or not entity.Hub.Resource.Enabled ) and "" or entity.Hub.Resource[ resource ]
+                end
             end
 
             _F.SetAbilities( ent )
@@ -413,6 +512,7 @@ return function( _V )
             _F.SetHealth( ent )
             _F.SetLevel( ent )
             _F.SetBoosts( ent )
+            _F.SetSpells( ent )
         end
     end
 
