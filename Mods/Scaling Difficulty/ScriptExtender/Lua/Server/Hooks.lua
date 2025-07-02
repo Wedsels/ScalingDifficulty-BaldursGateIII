@@ -73,14 +73,6 @@ return function( _V, _F )
             end
 
             for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
-                local uuid = _F.UUID( ent )
-                if uuid then
-                    Osi.AddBoosts( uuid, "IncreaseMaxHP( 0 )", _V.Key, "" )
-                    Ext.Timer.WaitFor( 500, function() Osi.RemoveBoosts( uuid, "IncreaseMaxHP( 0 )", 0, _V.Key, "" ) end )
-                end
-            end
-
-            for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
                 _F.AddNPC( ent )
             end
         end
@@ -91,6 +83,14 @@ return function( _V, _F )
         2,
         "after",
         function()
+            for _,ent in pairs( Ext.Entity.GetAllEntities() ) do
+                local uuid = _F.UUID( ent )
+                if uuid then
+                    Osi.AddBoosts( uuid, "IncreaseMaxHP( 0 )", _V.Key, "" )
+                    Ext.Timer.WaitFor( 500, function() Osi.RemoveBoosts( uuid, "IncreaseMaxHP( 0 )", 0, _V.Key, "" ) end )
+                end
+            end
+
             Ext.Entity.OnCreate( "EocLevel", function( ent ) Ext.Timer.WaitFor( 500, function() _F.AddNPC( ent ) end ) end )
 
             Ext.Osiris.RegisterListener( "CombatStarted", 1, "after", function() _F.UpdateNPC() end )

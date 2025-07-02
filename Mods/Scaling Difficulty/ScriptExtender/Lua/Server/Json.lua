@@ -119,8 +119,8 @@ return function( _V )
     local default = {
         Enabled = true,
         Spells = 0.75,
-        LevelingBossHP = 12.0,
-        LevelingHP = 8.0,
+        LevelingBossHP = 10.0,
+        LevelingHP = 6.0,
         LevelingInitiative = 0.5,
         LevelingCasting = 0.5,
         LevelingPhysical = 0.5,
