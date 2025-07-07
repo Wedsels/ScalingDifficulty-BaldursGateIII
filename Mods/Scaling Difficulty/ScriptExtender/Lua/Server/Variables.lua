@@ -58,6 +58,7 @@ _V.General = {}
 --- @field LevelBonus number
 --- @field Downscaling boolean
 --- @field Spells number
+--- @field SpellBlacklist string
 
 --- @type Settings
 _V.Settings = {}
@@ -75,6 +76,7 @@ _V.NPC = {
     Ally = true,
     Summon = true,
     Boss = true,
+    Player = true
 }
 
 --- @class Health
@@ -105,6 +107,7 @@ _V.NPC = {
 --- @field Resource Resource
 --- @field OldResource Resource
 --- @field OldSpells number
+--- @field OldBlacklist string
 --- @field Health Health
 --- @field Modifiers Modifiers
 --- @field CleanBoosts boolean
@@ -177,6 +180,16 @@ for _,uuid in ipairs( Ext.StaticData.GetAll( "SpellList" ) ) do
     end
 end
 
+--- @type table< string, table< string > >
+_V.SpellNames = {}
+for _,spell in ipairs( Ext.Stats.GetStats( "SpellData" ) ) do
+    local data = Ext.Stats.Get( spell )
+    local name = Ext.Loca.GetTranslatedString( data.DisplayName ):gsub( "[^%w]", "" ):lower()
+    _V.SpellNames[ name ] = _V.SpellNames[ name ] or {}
+    table.insert( _V.SpellNames[ name ], spell )
+end
+
+_D(Ext.Loca.GetTranslatedString( Ext.Stats.Get("Projectile_RayOfFrost").DisplayName ))
 local class
 for line in Ext.IO.LoadFile( "Mods/Scaling Difficulty/ScriptExtender/Lua/Server/Variables.lua", "data" ):gmatch( "[^\r\n]+" ) do
     if class then

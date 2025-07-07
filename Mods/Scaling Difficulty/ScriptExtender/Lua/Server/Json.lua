@@ -21,7 +21,8 @@ return function( _V )
                                 "Enemy",
                                 "Ally",
                                 "Summon",
-                                "Boss"
+                                "Boss",
+                                "Player"
                             }
                         }
                     },
@@ -39,7 +40,24 @@ return function( _V )
                                 "Variation",
                                 "Resource"
                             }
-                        }
+                        },
+                        VisibleIf = { Conditions = { { SettingId = "NPC", Operator = "!=", ExpectedValue = "Player" } } }
+                    },
+                    {
+                        Id = "PlayerPage",
+                        Name = "Page",
+                        Tooltip = "Choose which options page to display.",
+                        Type = "radio",
+                        Default = "Leveling",
+                        Options = {
+                            Choices = {
+                                "Leveling",
+                                "Bonus",
+                                "Variation",
+                                "Resource"
+                            }
+                        },
+                        VisibleIf = { Conditions = { { SettingId = "NPC", Operator = "==", ExpectedValue = "Player" } } }
                     }
                 }
             }
@@ -51,6 +69,7 @@ return function( _V )
         Downscaling = { "Downlevel the NPC to the Party Level.", "checkbox" },
         LevelBonus = { "Level the NPC to the Party Level + X.", "int" },
         Spells = { "Give NPC casters a random number of spells up to X * Level.\n\nThe given spells match the NPC archetype from a custom dynamic class-based system.\nWorks with any modded spells.", "float" },
+        SpellBlacklist = { "The names of spells to not give through NPC Spells sepearated by ';'\n\nSuch as:\nLighting Arrow;True Strike", "text" },
         HP = { "Increase NPC HP by X." },
         PercentHP = { "Increase NPC HP by X%.\n0.05 means each NPC recieves a 5% max health bonus.", "float" },
         AC = { "Increase NPC AC by X." },
@@ -145,9 +164,7 @@ return function( _V )
             for _,stat in ipairs( _V[ setting ] or _V.Stats ) do
                 settings[ #settings + 1 ] = {}
                 local edit = settings[ #settings ]
-
-                local tip = tips[ setting .. stat ] and tips[ setting .. stat ] or tips[ stat ]
-
+                local tip = tips[ setting .. stat ] or tips[ stat ]
                 local enabler = stat == "Enabled"
 
                 edit.Id = setting .. npc .. stat
@@ -166,18 +183,20 @@ return function( _V )
                 end
 
                 edit.Default =
+                    npc == "Player" and fallback or
                     default[ setting .. npc .. stat ] or
                     default[ setting .. stat ] or
+                    default[ npc .. setting ] or
                     default[ npc .. stat ] or
                     default[ setting ] or
-                    default[ npc ] or
                     default[ stat ] or
+                    default[ npc ] or
                     fallback
 
                 edit.VisibleIf = {
                     Conditions = {
                         { SettingId = "NPC", Operator = "==", ExpectedValue = npc },
-                        { SettingId = "Page", Operator = "==", ExpectedValue = setting }
+                        { SettingId = ( npc == "Player" and npc or "" ) .. "Page", Operator = "==", ExpectedValue = setting }
                     }
                 }
 

@@ -141,7 +141,7 @@ return function( _V )
     end
 
     _F.Archetype = function( ent, uuid )
-        if _F.IsPlayer( ent ) then return end
+        if _F.IsPlayer( ent ) then return "Player" end
         if _F.IsBoss( ent ) then return "Boss" end
         if Osi.IsSummon( uuid ) == 1 then return "Summon" end
         if _F.IsEnemy( uuid ) then return "Enemy" end
@@ -169,7 +169,6 @@ return function( _V )
             if not stats or not health then return end
 
             local type = _F.Archetype( ent, uuid )
-            if not type then return end
 
             _V.Entities[ uuid ] = {
                 Name = ent.ServerCharacter and ent.ServerCharacter.Template.Name or ent.Uuid.EntityUuid,
@@ -186,6 +185,7 @@ return function( _V )
                 Resource = _F.Default( "Resource", true ),
                 OldResource = _F.Default( "Resource" ),
                 OldSpells = 0,
+                OldBlacklist = "",
                 AC = {
                     Type = false,
                     ACBonus = 0,
@@ -230,18 +230,31 @@ return function( _V )
 
     _F.SetSpells = function( ent )
         local uuid, entity = _F.GetEntity( ent )
-        if not entity or not next( entity.Class ) then return end
+        if not entity or entity.Type == "Player" or not next( entity.Class ) then return end
 
         local num = entity.Hub.General.Enabled and _F.Whole( entity.Hub.General.Spells * ( entity.LevelBase + entity.LevelChange ) ) or 0
-        if num == entity.OldSpells then return end
+        if num == entity.OldSpells and entity.Hub.General.SpellBlacklist == entity.OldBlacklist then return end
 
         local seed = _F.Hash( uuid )
         local ran = _F.RNG( seed )
 
+        local blacklist = {}
+        for _,spell in ipairs( _F.Split( entity.Hub.General.SpellBlacklist, ';' ) ) do
+            local tbl = _V.SpellNames[ spell:gsub( "[^%w]", "" ):lower() ]
+            if tbl then
+                for _,name in ipairs( tbl ) do
+                    blacklist[ name ] = true
+                end
+            end
+        end
+
         local spells = {}
         local roll = ran( num, 2 )
-        for i = 1, roll do
-            spells[ i ] = ran( ran( ran( entity.Class ) ) )
+        for _ = 1, roll do
+            local spell = ran( ran( ran( entity.Class ) ) )
+            if not blacklist[ spell ] then
+                spells[ #spells + 1 ] = spell
+            end
         end
 
         local oldspells = {}
@@ -249,8 +262,11 @@ return function( _V )
             ran = _F.RNG( seed )
 
             roll = ran( entity.OldSpells, 2 )
-            for i = 1, roll do
-                oldspells[ i ] = ran( ran( ran( entity.Class ) ) )
+            for _ = 1, roll do
+                local spell = ran( ran( ran( entity.Class ) ) )
+                if not blacklist[ spell ] then
+                    oldspells[ #oldspells + 1 ] = spell
+                end
             end
         end
 
@@ -273,6 +289,7 @@ return function( _V )
         end
 
         entity.OldSpells = num
+        entity.OldBlacklist = entity.Hub.General.SpellBlacklist
     end
 
     _F.SetAC = function( ent, index, type )
@@ -380,7 +397,7 @@ return function( _V )
 
     _F.SetLevel = function( ent )
         local uuid, entity = _F.GetEntity( ent )
-        if not entity then return end
+        if not entity or entity.Type == "Player" then return end
 
         local eoc = ent.EocLevel
 
@@ -469,11 +486,8 @@ return function( _V )
             if not entity or not entity.Hub then _F.AddNPC( ent ) return end
 
             local arch = _F.Archetype( ent, uuid )
-            local undo = not arch
-            if arch then
-                entity.Type = arch
-                entity.Hub = _V.Hub[ arch ]
-            end
+            entity.Type = arch
+            entity.Hub = _V.Hub[ arch ]
 
             local party = 0
             for _,p in pairs( Osi.DB_Players:Get( nil ) ) do
@@ -488,22 +502,22 @@ return function( _V )
                 level = entity.LevelBase
             end
 
-            entity.LevelChange = ( undo or not entity.Hub.Leveling.Enabled ) and 0 or level - entity.LevelBase
+            entity.LevelChange = not entity.Hub.Leveling.Enabled and 0 or level - entity.LevelBase
 
             local ran = _F.RNG( _F.Hash( uuid ) )
 
             for _,stat in ipairs( _V.Stats ) do
                 if type( entity.Hub.Bonus[ stat ] ) == "number" then
                     entity.Stats[ stat ]
-                        = ( ( undo or not entity.Hub.Bonus.Enabled ) and 0 or entity.Hub.Bonus[ stat ] )
+                        = ( not entity.Hub.Bonus.Enabled and 0 or entity.Hub.Bonus[ stat ] )
                         + entity.Hub.Leveling[ stat ] * entity.LevelChange
-                        + ( ( undo or not entity.Hub.Variation.Enabled ) and 0 or ran( entity.Hub.Variation[ stat ] ) )
+                        + ( not entity.Hub.Variation.Enabled and 0 or ran( entity.Hub.Variation[ stat ] ) )
                 end
             end
 
             for _,resource in ipairs( _V.Resource ) do
                 if type( entity.Resource[ resource ] ) == "string" then
-                    entity.Resource[ resource ] = ( undo or not entity.Hub.Resource.Enabled ) and "" or entity.Hub.Resource[ resource ]
+                    entity.Resource[ resource ] = not entity.Hub.Resource.Enabled and "" or entity.Hub.Resource[ resource ]
                 end
             end
 
