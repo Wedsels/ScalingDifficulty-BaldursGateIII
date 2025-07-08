@@ -7,3 +7,4 @@ Ext.RegisterConsoleCommand( "BPSD", function() print( _J( _V ) ) end )
 Ext.RegisterConsoleCommand( "SSD", function() print( _V.Seed ) end )
 
 Ext.Vars.RegisterModVariable( ModuleUUID, "Seed", {} )
+Ext.Vars.RegisterUserVariable( "ScalingDifficultySpellCache", {} )
