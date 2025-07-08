@@ -257,18 +257,7 @@ return function( _V )
             end
         end
 
-        local oldspells = {}
-        if entity.OldSpells then
-            ran = _F.RNG( seed )
-
-            roll = ran( entity.OldSpells, 2 )
-            for _ = 1, roll do
-                local spell = ran( ran( ran( entity.Class ) ) )
-                if not blacklist[ spell ] then
-                    oldspells[ #oldspells + 1 ] = spell
-                end
-            end
-        end
+        local oldspells = ent.Vars.ScalingDifficultySpellCache or {}
 
         for _,spell in ipairs( spells ) do
             local match = false
@@ -290,6 +279,7 @@ return function( _V )
 
         entity.OldSpells = num
         entity.OldBlacklist = entity.Hub.General.SpellBlacklist
+        ent.Vars.ScalingDifficultySpellCache = spells
     end
 
     _F.SetAC = function( ent, index, type )
