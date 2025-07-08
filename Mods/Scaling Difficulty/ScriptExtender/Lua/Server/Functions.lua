@@ -339,7 +339,9 @@ return function( _V )
         stats.InitiativeBonus = _F.Whole( stats.InitiativeBonus + entity.Stats.Initiative - ( clean and entity.OldStats.Initiative or 0 ) )
         entity.OldStats.Initiative = entity.Stats.Initiative
 
-        stats.ProficiencyBonus = 1 + math.floor( ( entity.LevelBase + entity.LevelChange ) / 2.0 )
+        if entity.Type ~= "Player" then
+            stats.ProficiencyBonus = 1 + math.floor( ( entity.LevelBase + entity.LevelChange ) / 2.0 )
+        end
 
         if not clean then
             ent.Resistances.AC = ent.Resistances.AC + entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity
