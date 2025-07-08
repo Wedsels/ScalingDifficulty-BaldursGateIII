@@ -171,7 +171,7 @@ return function( _V )
             local type = _F.Archetype( ent, uuid )
 
             _V.Entities[ uuid ] = {
-                Name = ent.ServerCharacter and ent.ServerCharacter.Template.Name or ent.Uuid.EntityUuid,
+                Name = ent.ServerCharacter and ent.ServerCharacter.Template.Name or uuid,
                 Scaled = false,
                 Type = type,
                 Hub = _V.Hub[ type ],
@@ -181,8 +181,8 @@ return function( _V )
                 Constitution = stats.AbilityModifiers[ 4 ],
                 Physical = stats.Abilities[ 2 ] <= stats.Abilities[ 3 ] and "Dexterity" or "Strength",
                 Casting = tostring( stats.SpellCastingAbility ),
-                OldStats = _F.Default( "Stats" ),
                 Resource = _F.Default( "Resource", true ),
+                OldStats = _F.Default( "Stats" ),
                 OldResource = _F.Default( "Resource" ),
                 OldSpells = 0,
                 OldBlacklist = "",
@@ -240,7 +240,7 @@ return function( _V )
 
         local blacklist = {}
         for _,spell in ipairs( _F.Split( entity.Hub.General.SpellBlacklist, ';' ) ) do
-            local tbl = _V.SpellNames[ spell:gsub( "[^%w]", "" ):lower() ]
+            local tbl = _V.SpellNames[ spell:gsub( "[%s%p]", "" ):lower() ]
             if tbl then
                 for _,name in ipairs( tbl ) do
                     blacklist[ name ] = true
@@ -399,9 +399,7 @@ return function( _V )
         local uuid, entity = _F.GetEntity( ent )
         if not entity or entity.Type == "Player" then return end
 
-        local eoc = ent.EocLevel
-
-        eoc.Level = entity.LevelBase + entity.LevelChange
+        ent.EocLevel.Level = entity.LevelBase + entity.LevelChange
 
         ent:Replicate( "EocLevel" )
     end

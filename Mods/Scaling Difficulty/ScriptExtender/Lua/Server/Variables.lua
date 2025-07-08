@@ -103,8 +103,8 @@ _V.NPC = {
 --- @field Physical string
 --- @field Casting string
 --- @field Stats Stats
---- @field OldStats Stats
 --- @field Resource Resource
+--- @field OldStats Stats
 --- @field OldResource Resource
 --- @field OldSpells number
 --- @field OldBlacklist string
@@ -184,12 +184,11 @@ end
 _V.SpellNames = {}
 for _,spell in ipairs( Ext.Stats.GetStats( "SpellData" ) ) do
     local data = Ext.Stats.Get( spell )
-    local name = Ext.Loca.GetTranslatedString( data.DisplayName ):gsub( "[^%w]", "" ):lower()
+    local name = Ext.Loca.GetTranslatedString( data.DisplayName ):gsub( "[%s%p]", "" ):lower()
     _V.SpellNames[ name ] = _V.SpellNames[ name ] or {}
     table.insert( _V.SpellNames[ name ], spell )
 end
 
-_D(Ext.Loca.GetTranslatedString( Ext.Stats.Get("Projectile_RayOfFrost").DisplayName ))
 local class
 for line in Ext.IO.LoadFile( "Mods/Scaling Difficulty/ScriptExtender/Lua/Server/Variables.lua", "data" ):gmatch( "[^\r\n]+" ) do
     if class then
