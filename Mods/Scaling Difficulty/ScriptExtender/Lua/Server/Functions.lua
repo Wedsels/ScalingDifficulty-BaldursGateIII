@@ -233,6 +233,7 @@ return function( _V )
         if not entity or entity.Type == "Player" or not next( entity.Class ) then return end
 
         local num = entity.Hub.General.Enabled and _F.Whole( entity.Hub.General.Spells * ( entity.LevelBase + entity.LevelChange ) ) or 0
+        num = math.min( num, 18 )
         if num == entity.OldSpells and entity.Hub.General.SpellBlacklist == entity.OldBlacklist then return end
 
         local seed = _F.Hash( uuid )
@@ -396,16 +397,16 @@ return function( _V )
         ent:Replicate( "EocLevel" )
     end
 
-    _F.SetBoosts = function( ent, force )
+    _F.SetBoosts = function( ent, remove )
         local uuid, entity = _F.GetEntity( ent )
         if not entity then return end
 
-        if force or entity.CleanBoosts or entity.OldStats.DamageBonus ~= entity.Stats.DamageBonus then
-            if force or entity.OldStats.DamageBonus ~= 0 then
+        if remove or entity.CleanBoosts or entity.OldStats.DamageBonus ~= entity.Stats.DamageBonus then
+            if remove or entity.OldStats.DamageBonus ~= 0 then
                 Osi.RemoveBoosts( uuid, string.format( _V.Boosts.DamageBonus, entity.OldStats.DamageBonus ), 0, _V.Key, "" )
             end
 
-            local stat = _F.Whole( entity.Stats.DamageBonus )
+            local stat = entity.CleanBoosts and 0 or _F.Whole( entity.Stats.DamageBonus )
 
             if entity.CleanBoosts or stat ~= 0 then
                 Osi.AddBoosts( uuid, string.format( _V.Boosts.DamageBonus, stat ), _V.Key, "" )
@@ -414,12 +415,12 @@ return function( _V )
             entity.OldStats.DamageBonus = stat
         end
 
-        if force or entity.CleanBoosts or entity.OldStats.Attack ~= entity.Stats.Attack then
-            if force or entity.OldStats.Attack ~= 0 then
+        if remove or entity.CleanBoosts or entity.OldStats.Attack ~= entity.Stats.Attack then
+            if remove or entity.OldStats.Attack ~= 0 then
                 Osi.RemoveBoosts( uuid, string.format( _V.Boosts.RollBonus, "Attack", entity.OldStats.Attack ), 0, _V.Key, "" )
             end
 
-            local stat = _F.Whole( entity.Stats.Attack )
+            local stat = entity.CleanBoosts and 0 or _F.Whole( entity.Stats.Attack )
 
             if entity.CleanBoosts or stat ~= 0 then
                 Osi.AddBoosts( uuid, string.format( _V.Boosts.RollBonus, "Attack", stat ), _V.Key, "" )
@@ -432,17 +433,19 @@ return function( _V )
             if type( entity.Resource[ resource ] ) == "string" then
                 local amount = 0
                 local elvl = entity.LevelBase + entity.LevelChange
-                for _,v in ipairs( _F.Split( entity.Resource[ resource ], ',' ) ) do
-                    if tonumber( v ) and elvl >= tonumber( v ) then
-                        amount = amount + 1
+                if not entity.CleanBoosts then
+                    for _,v in ipairs( _F.Split( entity.Resource[ resource ], ',' ) ) do
+                        if tonumber( v ) and elvl >= tonumber( v ) then
+                            amount = amount + 1
+                        end
                     end
                 end
 
-                if force or entity.CleanBoosts or entity.OldResource[ resource ] ~= amount then
+                if remove or entity.CleanBoosts or entity.OldResource[ resource ] ~= amount then
                     local level = resource:match( "Level([%d])" ) or 0
                     local boost = resource:gsub( "Level[%d]", "" )
 
-                    if force or entity.OldResource[ resource ] ~= 0 then
+                    if remove or entity.OldResource[ resource ] ~= 0 then
                         Osi.RemoveBoosts( uuid, string.format( _V.Boosts.Resource, boost, entity.OldResource[ resource ], level ), 0, _V.Key, "" )
                     end
 
