@@ -24,6 +24,7 @@ _V.Stats = {}
 --- @field Intelligence number
 --- @field Wisdom number
 --- @field Charisma number
+--- @field Size number
 
 --- @type Resource
 _V.Resource = {}
@@ -108,6 +109,8 @@ _V.NPC = {
 --- @field OldResource Resource
 --- @field OldSpells number
 --- @field OldBlacklist string
+--- @field OldSize number
+--- @field OldWeight number
 --- @field Health Health
 --- @field Modifiers Modifiers
 --- @field CleanBoosts boolean

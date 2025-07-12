@@ -73,6 +73,8 @@ return function( _V, _F )
             Ext.Entity.OnChange( "Health", function( ent, _, index ) _F.SetHealth( ent, index ) end )
             Ext.Entity.OnChange( "EocLevel", function( ent, _, index ) _F.SetLevel( ent ) end )
             Ext.Entity.OnChange( "Resistances", function( ent, _, index ) _F.SetAC( ent, index ) end )
+            Ext.Entity.OnChange( "GameObjectVisual", function( ent, _, index ) _F.SetSize( ent, index ) end )
+            Ext.Entity.OnChange( "Data", function( ent, _, index ) _F.SetWeight( ent, index ) end )
         end
     )
 end

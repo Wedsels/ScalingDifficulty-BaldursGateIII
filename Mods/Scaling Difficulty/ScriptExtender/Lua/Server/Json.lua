@@ -84,6 +84,7 @@ return function( _V )
         Intelligence = { "Increase NPC Intelligence Ability Score by X." },
         Wisdom = { "Increase NPC Wisdom Ability Score by X." },
         Charisma = { "Increase NPC Charisma Ability Score by X." },
+        Size = { "Increase NPC size by X%.\n0.05 means each NPC recieves a 5% size bonus", "float" },
         LevelingHP = { "Increase NPC HP by X + Constitution Modifier each scaled level.", "float" },
         LevelingPercentHP = { "Increase NPC HP by X% each scaled level.\n0.05 means each NPC recieves a 5% max health bonus.", "float" },
         LevelingAC = { "Increase NPC AC by X each scaled level.", "float" },
@@ -98,6 +99,7 @@ return function( _V )
         LevelingIntelligence = { "Increase NPC Intelligence Ability Score by X each scaled level.", "float" },
         LevelingWisdom = { "Increase NPC Wisdom Ability Score by X each scaled level.", "float" },
         LevelingCharisma = { "Increase NPC Charisma Ability Score by X each scaled level.", "float" },
+        LevelingSize = { "Increase NPC size by X% each scaled level.\n0.05 means each NPC recieves a 5% size bonus", "float" },
         VariationHP = { "Increase NPC HP by a random amount up to X.", "float" },
         VariationPercentHP = { "Increase NPC HP by a random amount up to X%.\n0.05 means each NPC recieves a 5% max health bonus.", "float" },
         VariationAC = { "Increase NPC AC by a random amount up to X.", "float" },
@@ -112,6 +114,7 @@ return function( _V )
         VariationIntelligence = { "Increase NPC Intelligence Ability Score by a random amount up to X.", "float" },
         VariationWisdom = { "Increase NPC Wisdom Ability Score by a random amount up to X.", "float" },
         VariationCharisma = { "Increase NPC Charisma Ability Score by a random amount up to X.", "float" },
+        VariationSize = { "Increase NPC size by a random amount up to X%.\n0.05 means each NPC recieves a 5% size bonus", "float" },
         SpellSlotLevel1 = { "The levels at which this spell slot will be given to the NPC, separated by ','", "text" },
         SpellSlotLevel2 = { "The levels at which this spell slot will be given to the NPC, separated by ','", "text" },
         SpellSlotLevel3 = { "The levels at which this spell slot will be given to the NPC, separated by ','", "text" },
@@ -154,7 +157,8 @@ return function( _V )
         SpellSlotLevel3 = "5,5,6",
         SpellSlotLevel4 = "7,8,9",
         SpellSlotLevel5 = "9,10",
-        SpellSlotLevel6 = "11"
+        SpellSlotLevel6 = "11",
+        VariationSize = 0.1
     }
 
     local settings = json.Tabs[ 1 ].Settings

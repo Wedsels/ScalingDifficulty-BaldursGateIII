@@ -166,7 +166,9 @@ return function( _V )
         if not _V.Entities[ uuid ] then
             local stats = ent.Stats
             local health = ent.Health
-            if not stats or not health then return end
+            local visual = ent.GameObjectVisual
+            local data = ent.Data
+            if not stats or not health or not visual or not data then return end
 
             local type = _F.Archetype( ent, uuid )
 
@@ -186,6 +188,8 @@ return function( _V )
                 OldResource = _F.Default( "Resource" ),
                 OldSpells = 0,
                 OldBlacklist = "",
+                OldSize = visual.Scale,
+                OldWeight = data.Weight,
                 AC = {
                     Type = false,
                     ACBonus = 0,
@@ -464,6 +468,40 @@ return function( _V )
         end
     end
 
+    _F.SetSize = function( ent, index )
+        local uuid, entity = _F.GetEntity( ent )
+        local visual = ent.GameObjectVisual
+        if not entity or not visual or index == -1 then return end
+
+        local size = entity.Stats.Size
+        if index ~= 4 then
+            size = size - entity.OldStats.Size
+        else
+            entity.OldSize = visual.Scale
+        end
+
+        visual.Scale = entity.OldSize * ( 1.0 + size )
+
+        ent:Replicate( "GameObjectVisual" )
+    end
+
+    _F.SetWeight = function( ent, index )
+        local uuid, entity = _F.GetEntity( ent )
+        local data = ent.Data
+        if not entity or not data or index == -1 then return end
+
+        local weight = entity.Stats.Size
+        if index ~= 1 then
+            weight = weight - entity.OldStats.Size
+        else
+            entity.OldWeight = data.Weight
+        end
+
+        data.Weight = math.ceil( entity.OldWeight * ( 1.0 + weight ) )
+
+        ent:Replicate( "Data" )
+    end
+
     _F.UpdateNPC = function( uuid )
         uuid = _F.UUID( uuid )
 
@@ -493,6 +531,9 @@ return function( _V )
             local level = math.max( 0, party + ( entity.Hub.General.Enabled and entity.Hub.General.LevelBonus or 0 ) )
             if level < entity.LevelBase and ( not entity.Hub.General.Enabled or not entity.Hub.General.Downscaling ) then
                 level = entity.LevelBase
+            elseif arch == "Player" then
+                entity.LevelBase = 1
+                level = ent.EocLevel.Level
             end
 
             entity.LevelChange = not entity.Hub.Leveling.Enabled and 0 or level - entity.LevelBase
@@ -520,6 +561,8 @@ return function( _V )
             _F.SetLevel( ent )
             _F.SetBoosts( ent )
             _F.SetSpells( ent )
+            _F.SetSize( ent )
+            _F.SetWeight( ent )
         end
     end
 
