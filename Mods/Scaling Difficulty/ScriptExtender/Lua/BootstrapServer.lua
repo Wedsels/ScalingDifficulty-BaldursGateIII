@@ -24,18 +24,25 @@ if MCM then
         return ret
     end
 
-    Ext.ModEvents.BG3MCM[ "MCM_Setting_Saved" ]:Subscribe(
+    Ext.ModEvents.BG3MCM.MCM_Setting_Saved:Subscribe(
         function( payload )
-            if not payload or payload.modUUID ~= ModuleUUID or not payload.settingId then
+            if not payload or not payload.settingId or payload.modUUID ~= ModuleUUID or payload.settingId == "NPC" or payload.settingId == "Page" then
                 return
             end
 
-            local s = split( payload.settingId )
+            if payload.settingId == "Seed" then
+                local modvar = Ext.Vars.GetModVariables( ModuleUUID )
+                modvar.Seed = math.random( math.maxinteger )
+                _V.Seed = modvar.Seed
+            elseif payload.value ~= nil then
+                local s = split( payload.settingId )
 
-            if _V.Hub[ s[ 2 ] ] and _V.Hub[ s[ 2 ] ][ s[ 1 ] ] then
-                _V.Hub[ s[ 2 ] ][ s[ 1 ] ][ s[ 3 ] ] = payload.value
-                _F.UpdateNPC()
+                if _V.Hub[ s[ 2 ] ] and _V.Hub[ s[ 2 ] ][ s[ 1 ] ] then
+                    _V.Hub[ s[ 2 ] ][ s[ 1 ] ][ s[ 3 ] ] = payload.value
+                end
             end
+
+            _V.Reset = true
         end
     )
 end

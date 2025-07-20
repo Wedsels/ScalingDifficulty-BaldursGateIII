@@ -5,6 +5,7 @@ local _V = {}
 
 _V.Key = "Scaling Difficulty"
 _V.Seed = 0
+_V.Reset = false
 
 --- @type Stats
 _V.Stats = {}
@@ -182,6 +183,8 @@ for _,uuid in ipairs( Ext.StaticData.GetAll( "SpellList" ) ) do
         end
     end
 end
+
+_V.JsonBlueprint = Ext.Json.Parse( Ext.IO.LoadFile( "Mods/Scaling Difficulty/MCM_blueprint.json", "data" ) )
 
 --- @type table< string, table< string > >
 _V.SpellNames = {}

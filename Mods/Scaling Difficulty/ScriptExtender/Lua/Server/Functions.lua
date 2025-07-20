@@ -5,9 +5,9 @@ return function( _V )
 
     _F.Whole = function( n )
         if n < 0.0 then
-            return math.floor( n )
+            return math.ceil( n - 0.5 )
         end
-        return math.ceil( n )
+        return math.floor( n + 0.5 )
     end
 
     _F.Split = function( str, splt )
@@ -39,8 +39,9 @@ return function( _V )
             {
                 __call = function( _, range, reroll )
                     local roll = 0
-
+                    range = range or 1
                     reroll = reroll or 1
+
                     for _ = 1, reroll do
                         self.seed = ( 1103515245 * self.seed + 12345 ) % 0x80000000
                         local r = self.seed / 0x80000000
@@ -70,6 +71,16 @@ return function( _V )
         end
 
         return h
+    end
+
+    _F.DefaultBlueprint = function()
+        local ret = {}
+
+        for _,setting in pairs( _V.JsonBlueprint.Tabs[ 1 ].Settings ) do
+            ret[ setting.Id ] = setting.Default
+        end
+
+        return ret
     end
 
     _F.GetClass = function( ent )
@@ -383,7 +394,12 @@ return function( _V )
                 entity.Health.MaxHp = health.MaxHp
             end
 
-            health.MaxHp = math.max( 1, _F.Whole( ( entity.Health.MaxHp + entity.Stats.HP + entity.Modifiers.Current.Constitution * entity.LevelChange + ( entity.Modifiers.Current.Constitution - entity.Modifiers.Original.Constitution ) * entity.LevelBase ) * ( 1.0 + entity.Stats.PercentHP ) ) )
+            local hp = entity.Health.MaxHp + entity.Stats.HP
+            hp = hp + entity.Modifiers.Current.Constitution * entity.LevelChange
+            hp = hp + ( entity.Modifiers.Current.Constitution - entity.Modifiers.Original.Constitution ) * entity.LevelBase
+            hp = hp * ( 1.0 + entity.Stats.PercentHP + entity.Stats.Size )
+
+            health.MaxHp = math.max( 1, _F.Whole( hp ) )
 
             health.Hp = math.min( health.MaxHp, math.ceil( health.MaxHp * entity.Health.Percent ) )
             entity.Health.Hp = health.Hp
@@ -474,13 +490,11 @@ return function( _V )
         if not entity or not visual or index == -1 then return end
 
         local size = entity.Stats.Size
-        if index ~= 4 then
-            size = size - entity.OldStats.Size
-        else
+        if index == 4 then
             entity.OldSize = visual.Scale
         end
 
-        visual.Scale = entity.OldSize * ( 1.0 + size )
+        visual.Scale = math.max( 0.1, entity.OldSize * ( 1.0 + size ) )
 
         ent:Replicate( "GameObjectVisual" )
     end
@@ -491,13 +505,11 @@ return function( _V )
         if not entity or not data or index == -1 then return end
 
         local weight = entity.Stats.Size
-        if index ~= 1 then
-            weight = weight - entity.OldStats.Size
-        else
+        if index == 1 then
             entity.OldWeight = data.Weight
         end
 
-        data.Weight = math.ceil( entity.OldWeight * ( 1.0 + weight ) )
+        data.Weight = math.max( 1, math.ceil( entity.OldWeight * ( 1.0 + weight ) ) )
 
         ent:Replicate( "Data" )
     end
@@ -542,10 +554,15 @@ return function( _V )
 
             for _,stat in ipairs( _V.Stats ) do
                 if type( entity.Hub.Bonus[ stat ] ) == "number" then
+                    local vari = ran( entity.Hub.Variation[ stat ] )
+                    if ran() < 0.5 then
+                        vari = vari * -1.0
+                    end
+
                     entity.Stats[ stat ]
                         = ( not entity.Hub.Bonus.Enabled and 0 or entity.Hub.Bonus[ stat ] )
                         + entity.Hub.Leveling[ stat ] * entity.LevelChange
-                        + ( not entity.Hub.Variation.Enabled and 0 or ran( entity.Hub.Variation[ stat ] ) )
+                        + ( not entity.Hub.Variation.Enabled and 0 or vari )
                 end
             end
 

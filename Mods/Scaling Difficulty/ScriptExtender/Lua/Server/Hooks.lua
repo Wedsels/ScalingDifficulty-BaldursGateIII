@@ -11,12 +11,7 @@ return function( _V, _F )
             end
             _V.Seed = modvar.Seed
 
-            local Settings = {}
-
-            local default = Ext.Json.Parse( Ext.IO.LoadFile( "Mods/Scaling Difficulty/MCM_blueprint.json", "data" ) )
-            for _,setting in pairs( default.Tabs[ 1 ].Settings ) do
-                Settings[ setting.Id ] = setting.Default
-            end
+            local Settings = _F.DefaultBlueprint()
 
             local function SetSettings()
                 for npc,_ in pairs( _V.NPC ) do
@@ -63,9 +58,9 @@ return function( _V, _F )
 
             Ext.Entity.OnCreate( "EocLevel", function( ent ) Ext.Timer.WaitFor( 500, function() _F.AddNPC( ent ) end ) end )
 
-            Ext.Osiris.RegisterListener( "CombatStarted", 1, "after", function() _F.UpdateNPC() end )
-            Ext.Osiris.RegisterListener( "CombatEnded", 1, "after", function() _F.UpdateNPC() end )
-            Ext.Osiris.RegisterListener( "LeveledUp", 1, "after", function( c ) if Osi.DB_Players:Get( _F.UUID( c ) )[ 1 ] then _F.UpdateNPC() end end )
+            Ext.Osiris.RegisterListener( "CombatStarted", 1, "after", function() _V.Reset = true end )
+            Ext.Osiris.RegisterListener( "CombatEnded", 1, "after", function() _V.Reset = true end )
+            Ext.Osiris.RegisterListener( "LeveledUp", 1, "after", function( c ) if Osi.DB_Players:Get( _F.UUID( c ) )[ 1 ] then _V.Reset = true end end )
 
             Ext.Osiris.RegisterListener( "TurnStarted", 1, "after", function( c ) if Osi.IsActive( _F.UUID( c ) ) ~= 1 then return end _F.UpdateNPC( _F.UUID( c ) ) end )
 
@@ -75,6 +70,19 @@ return function( _V, _F )
             Ext.Entity.OnChange( "Resistances", function( ent, _, index ) _F.SetAC( ent, index ) end )
             Ext.Entity.OnChange( "GameObjectVisual", function( ent, _, index ) _F.SetSize( ent, index ) end )
             Ext.Entity.OnChange( "Data", function( ent, _, index ) _F.SetWeight( ent, index ) end )
+        end
+    )
+
+    local reset = -1
+    Ext.Events.Tick:Subscribe(
+        function()
+            if _V.Reset then
+                reset = Ext.Utils.MonotonicTime()
+                _V.Reset = false
+            elseif reset > 0 and Ext.Utils.MonotonicTime() - reset > 50 then
+                reset = -1
+                _F.UpdateNPC()
+            end
         end
     )
 end

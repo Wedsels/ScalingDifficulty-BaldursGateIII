@@ -7,8 +7,8 @@ return function( _V )
         SchemaVersion = 1,
         Tabs = {
             {
-                TabId = "General",
-                TabName = "General",
+                TabId = "Scaling",
+                TabName = "Scaling",
                 Settings = {
                     {
                         Id = "NPC",
@@ -60,6 +60,40 @@ return function( _V )
                         VisibleIf = { Conditions = { { SettingId = "NPC", Operator = "==", ExpectedValue = "Player" } } }
                     }
                 }
+            },
+            {
+                TabId = "General",
+                TabName = "General",
+                Settings = {
+                    {
+                        Id = "Default",
+                        Name = "Default",
+                        Tooltip = "Reset all options to default.",
+                        Type = "event_button",
+                        Options = { Label = "Default" }
+                    },
+                    {
+                        Id = "Disable",
+                        Name = "Disable",
+                        Tooltip = "Disable all pages and effects.",
+                        Type = "event_button",
+                        Options = { Label = "Disable" }
+                    },
+                    {
+                        Id = "Enable",
+                        Name = "Enable",
+                        Tooltip = "Enable all pages and effects.",
+                        Type = "event_button",
+                        Options = { Label = "Enable" }
+                    },
+                    {
+                        Id = "Seed",
+                        Name = "Seed",
+                        Tooltip = "Randomize the savegame seed for all random/variation effects.",
+                        Type = "event_button",
+                        Options = { Label = "Seed" }
+                    }
+                }
             }
         }
     }
@@ -84,7 +118,7 @@ return function( _V )
         Intelligence = { "Increase NPC Intelligence Ability Score by X." },
         Wisdom = { "Increase NPC Wisdom Ability Score by X." },
         Charisma = { "Increase NPC Charisma Ability Score by X." },
-        Size = { "Increase NPC size by X%.\n0.05 means each NPC recieves a 5% size bonus", "float" },
+        Size = { "Increase NPC size by X%.\n0.05 means each NPC recieves a 5% size bonus.\nSize influences weight and maximum HP.", "float" },
         LevelingHP = { "Increase NPC HP by X + Constitution Modifier each scaled level.", "float" },
         LevelingPercentHP = { "Increase NPC HP by X% each scaled level.\n0.05 means each NPC recieves a 5% max health bonus.", "float" },
         LevelingAC = { "Increase NPC AC by X each scaled level.", "float" },
@@ -99,7 +133,7 @@ return function( _V )
         LevelingIntelligence = { "Increase NPC Intelligence Ability Score by X each scaled level.", "float" },
         LevelingWisdom = { "Increase NPC Wisdom Ability Score by X each scaled level.", "float" },
         LevelingCharisma = { "Increase NPC Charisma Ability Score by X each scaled level.", "float" },
-        LevelingSize = { "Increase NPC size by X% each scaled level.\n0.05 means each NPC recieves a 5% size bonus", "float" },
+        LevelingSize = { "Increase NPC size by X% each scaled level.\n0.05 means each NPC recieves a 5% size bonus.\nSize influences weight and maximum HP.", "float" },
         VariationHP = { "Increase NPC HP by a random amount up to X.", "float" },
         VariationPercentHP = { "Increase NPC HP by a random amount up to X%.\n0.05 means each NPC recieves a 5% max health bonus.", "float" },
         VariationAC = { "Increase NPC AC by a random amount up to X.", "float" },
@@ -114,7 +148,7 @@ return function( _V )
         VariationIntelligence = { "Increase NPC Intelligence Ability Score by a random amount up to X.", "float" },
         VariationWisdom = { "Increase NPC Wisdom Ability Score by a random amount up to X.", "float" },
         VariationCharisma = { "Increase NPC Charisma Ability Score by a random amount up to X.", "float" },
-        VariationSize = { "Increase NPC size by a random amount up to X%.\n0.05 means each NPC recieves a 5% size bonus", "float" },
+        VariationSize = { "Increase NPC size by a random amount up to X%.\n0.05 means each NPC recieves a 5% size bonus.\nSize influences weight and maximum HP.", "float" },
         SpellSlotLevel1 = { "The levels at which this spell slot will be given to the NPC, separated by ','", "text" },
         SpellSlotLevel2 = { "The levels at which this spell slot will be given to the NPC, separated by ','", "text" },
         SpellSlotLevel3 = { "The levels at which this spell slot will be given to the NPC, separated by ','", "text" },
@@ -158,7 +192,7 @@ return function( _V )
         SpellSlotLevel4 = "7,8,9",
         SpellSlotLevel5 = "9,10",
         SpellSlotLevel6 = "11",
-        VariationSize = 0.1
+        VariationSize = 0.2
     }
 
     local settings = json.Tabs[ 1 ].Settings
@@ -208,7 +242,7 @@ return function( _V )
                     edit.Tooltip = "Enable or disable " .. npc .. " " .. setting .. "."
                 else
                     edit.Tooltip = tip[ 1 ]:gsub( "NPC", npc )
-                    edit.VisibleIf.Conditions[ # edit.VisibleIf.Conditions + 1 ] = { SettingId = setting .. npc .. "Enabled", Operator = "==", ExpectedValue = true }
+                    edit.VisibleIf.Conditions[ #edit.VisibleIf.Conditions + 1 ] = { SettingId = setting .. npc .. "Enabled", Operator = "==", ExpectedValue = true }
                 end
             end
         end
