@@ -346,7 +346,7 @@ return function( _V )
         entity.OldStats.Initiative = entity.Stats.Initiative
 
         if entity.Type ~= "Player" then
-            stats.ProficiencyBonus = 1 + math.floor( ( entity.LevelBase + entity.LevelChange ) / 2.0 )
+            stats.ProficiencyBonus = 2 + math.floor( ( entity.LevelBase + entity.LevelChange - 1 ) / 4.0 )
         end
 
         if not clean then
