@@ -105,8 +105,10 @@ _V.NPC = {
 --- @field Physical string
 --- @field Casting string
 --- @field Stats Stats
+--- @field Skills table< number >
 --- @field Resource Resource
 --- @field OldStats Stats
+--- @field OldSkills table< number >
 --- @field OldResource Resource
 --- @field OldSpells number
 --- @field OldBlacklist string

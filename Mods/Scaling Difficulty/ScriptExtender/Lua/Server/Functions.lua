@@ -140,7 +140,7 @@ return function( _V )
 
     _F.IsPlayer = function( ent )
         local uuid = _F.UUID( ent )
-        return not ent.Bound and ent.Stats or Osi.DB_Players:Get( uuid )[ 1 ] or Osi.DB_Origins:Get( uuid )[ 1 ]
+        return not ent.Bound and ent.Stats or Osi.DB_Players:Get( uuid )[ 1 ]
     end
 
     _F.IsEnemy = function( uuid )
@@ -191,6 +191,7 @@ return function( _V )
                 LevelBase = eoc.Level,
                 LevelChange = 0,
                 Stats = _F.Default( "Stats" ),
+                Skills = {},
                 Constitution = stats.AbilityModifiers[ 4 ],
                 Physical = stats.Abilities[ 2 ] <= stats.Abilities[ 3 ] and "Dexterity" or "Strength",
                 Casting = tostring( stats.SpellCastingAbility ),
@@ -200,6 +201,7 @@ return function( _V )
                 OldSpells = 0,
                 OldBlacklist = "",
                 OldSize = visual.Scale,
+                OldSkills = {},
                 OldWeight = data.Weight,
                 AC = {
                     Type = false,
@@ -342,6 +344,40 @@ return function( _V )
             entity.OldStats[ k ] = stat
         end
 
+        for i,k in ipairs( {
+            _V.Abilities.Charisma,
+            _V.Abilities.Charisma,
+            _V.Abilities.Charisma,
+            _V.Abilities.Charisma,
+            _V.Abilities.Dexterity,
+            _V.Abilities.Dexterity,
+            _V.Abilities.Dexterity,
+            _V.Abilities.Intelligence,
+            _V.Abilities.Intelligence,
+            _V.Abilities.Intelligence,
+            _V.Abilities.Intelligence,
+            _V.Abilities.Intelligence,
+            _V.Abilities.Strength,
+            _V.Abilities.Wisdom,
+            _V.Abilities.Wisdom,
+            _V.Abilities.Wisdom,
+            _V.Abilities.Wisdom,
+            _V.Abilities.Wisdom
+        } ) do
+            if clean then
+                entity.Skills[ i ] = entity.Skills[ i ] or stats.Skills[ i ]
+            else
+                entity.Skills[ i ] = stats.Skills[ i ];
+            end
+
+            if index == -1 then
+                entity.Skills[ i ] = entity.Skills[ i ] + ( stats.Skills[ i ] - entity.OldSkills[ i ] )
+            end
+
+            stats.Skills[ i ] = entity.Skills[ i ] + stats.AbilityModifiers[ k ]
+            entity.OldSkills[ i ] = stats.Skills[ i ]
+        end
+
         stats.InitiativeBonus = _F.Whole( stats.InitiativeBonus + entity.Stats.Initiative - ( clean and entity.OldStats.Initiative or 0 ) )
         entity.OldStats.Initiative = entity.Stats.Initiative
 
@@ -380,7 +416,7 @@ return function( _V )
             end
 
             entity.Health.Transformed = not entity.Health.Transformed
-        elseif index == 1 or index == -1 or Osi.IsActive( uuid ) ~= 1 then
+        elseif index == -1 or index == 1 or index == 5 or Osi.IsActive( uuid ) ~= 1 then
             if health.Hp ~= entity.Health.Hp then
                 entity.Health.Percent = health.Hp / math.max( 1, health.MaxHp )
                 entity.Health.Hp = health.Hp
@@ -490,7 +526,7 @@ return function( _V )
         if not entity or not visual or index == -1 then return end
 
         local size = entity.Stats.Size
-        if index == 4 then
+        if index == 1 or index == 4 or index == 9 then
             entity.OldSize = visual.Scale
         end
 
@@ -505,7 +541,7 @@ return function( _V )
         if not entity or not data or index == -1 then return end
 
         local weight = entity.Stats.Size
-        if index == 1 then
+        if index == 1 or index == 5 then
             entity.OldWeight = data.Weight
         end
 
@@ -529,6 +565,10 @@ return function( _V )
             if not entity or not entity.Hub then _F.AddNPC( ent ) return end
 
             local arch = _F.Archetype( ent, uuid )
+            if Osi.HasActiveStatusWithGroup( uuid, "SG_Dominated" ) == 1 then
+                if arch == "Enemy" then arch = "Ally"
+                elseif arch == "Ally" then arch = "Enemy" end
+            end
             entity.Type = arch
             entity.Hub = _V.Hub[ arch ]
 
