@@ -364,7 +364,7 @@ return function( _V )
             _V.Abilities.Wisdom,
             _V.Abilities.Wisdom
         } ) do
-            if clean then
+            if index ~= 8 and clean then
                 entity.Skills[ i ] = entity.Skills[ i ] or stats.Skills[ i ]
             else
                 entity.Skills[ i ] = stats.Skills[ i ];
@@ -374,7 +374,14 @@ return function( _V )
                 entity.Skills[ i ] = entity.Skills[ i ] + ( stats.Skills[ i ] - entity.OldSkills[ i ] )
             end
 
-            stats.Skills[ i ] = entity.Skills[ i ] + stats.AbilityModifiers[ k ]
+            local modifier = ""
+            for stat,value in pairs( _V.Abilities ) do
+                if value == k then
+                    modifier = stat
+                end
+            end
+
+            stats.Skills[ i ] = entity.Skills[ i ] + ( stats.AbilityModifiers[ k ] - ( entity.Modifiers.Original[ modifier ] or 0 ) )
             entity.OldSkills[ i ] = stats.Skills[ i ]
         end
 
