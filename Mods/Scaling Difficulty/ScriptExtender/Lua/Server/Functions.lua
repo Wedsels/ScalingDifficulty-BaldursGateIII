@@ -123,8 +123,12 @@ return function( _V )
             end
         end
 
-        if ent.DisplayName and ent.DisplayName.Title.Handle.Handle ~= "ls::TranslatedStringRepository::s_HandleUnknown" then
-            return true
+        if ent.DisplayName then
+            local str = Osi.ResolveTranslatedString( ent.DisplayName.Title.Handle.Handle )
+            if not _V.SeenTitles[ str ] or _V.SeenTitles[ str ] <= 1 then
+                _V.SeenTitles[ str ] = 1 + ( _V.SeenTitles[ str ] or 0 )
+                return true
+            end
         end
 
         if ent.ActionResources and ent.ActionResources.Resources and
@@ -423,7 +427,7 @@ return function( _V )
             end
 
             entity.Health.Transformed = not entity.Health.Transformed
-        elseif index == -1 or index == 1 or index == 5 or Osi.IsActive( uuid ) ~= 1 then
+        elseif index == -1 or index == 1 or index == 3 or index == 5 or Osi.IsActive( uuid ) ~= 1 then
             if health.Hp ~= entity.Health.Hp then
                 entity.Health.Percent = health.Hp / math.max( 1, health.MaxHp )
                 entity.Health.Hp = health.Hp
@@ -530,14 +534,13 @@ return function( _V )
     _F.SetSize = function( ent, index )
         local uuid, entity = _F.GetEntity( ent )
         local visual = ent.GameObjectVisual
-        if not entity or not visual or index == -1 then return end
+        if not entity or not visual then return end
 
-        local size = entity.Stats.Size
-        if index == 1 or index == 4 or index == 9 then
+        if index and index > -1 then
             entity.OldSize = visual.Scale
         end
 
-        visual.Scale = math.max( 0.1, entity.OldSize * ( 1.0 + size ) )
+        visual.Scale = math.min( 10.0, math.max( 0.1, entity.OldSize * ( 1.0 + entity.Stats.Size ) ) )
 
         ent:Replicate( "GameObjectVisual" )
     end
@@ -545,14 +548,13 @@ return function( _V )
     _F.SetWeight = function( ent, index )
         local uuid, entity = _F.GetEntity( ent )
         local data = ent.Data
-        if not entity or not data or index == -1 then return end
+        if not entity or not data then return end
 
-        local weight = entity.Stats.Size
-        if index == 1 or index == 5 then
+        if index and index > -1 then
             entity.OldWeight = data.Weight
         end
 
-        data.Weight = math.max( 1, math.ceil( entity.OldWeight * ( 1.0 + weight ) ) )
+        data.Weight = math.max( 1, math.ceil( entity.OldWeight * ( 1.0 + entity.Stats.Size ) ) )
 
         ent:Replicate( "Data" )
     end
