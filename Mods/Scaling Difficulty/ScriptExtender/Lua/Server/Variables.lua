@@ -137,9 +137,6 @@ _V.Boosts = {
     DamageBonus = "DamageBonus( %d )"
 }
 
---- @type table< string, number >
-_V.SeenTitles = {}
-
 --- @type table< string, table< string > >
 _V.Classes = {}
 for _,type in pairs( Ext.StaticData.GetAll( "Progression" ) ) do

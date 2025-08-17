@@ -125,8 +125,7 @@ return function( _V )
 
         if ent.DisplayName then
             local str = Osi.ResolveTranslatedString( ent.DisplayName.Title.Handle.Handle )
-            if not _V.SeenTitles[ str ] or _V.SeenTitles[ str ] <= 1 then
-                _V.SeenTitles[ str ] = 1 + ( _V.SeenTitles[ str ] or 0 )
+            if str and str ~= "" and str ~= "Novice of the Absolute" and str ~= "Matriphagous Child" then
                 return true
             end
         end
@@ -157,8 +156,8 @@ return function( _V )
 
     _F.Archetype = function( ent, uuid )
         if _F.IsPlayer( ent ) then return "Player" end
-        if _F.IsBoss( ent ) then return "Boss" end
         if Osi.IsSummon( uuid ) == 1 then return "Summon" end
+        if _F.IsBoss( ent ) then return "Boss" end
         if _F.IsEnemy( uuid ) then return "Enemy" end
         return "Ally"
     end
