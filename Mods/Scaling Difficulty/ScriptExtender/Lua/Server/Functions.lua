@@ -193,11 +193,12 @@ return function( _V )
                 Hub = _V.Hub[ type ],
                 LevelBase = eoc.Level,
                 LevelChange = 0,
-                Stats = _F.Default( "Stats" ),
-                Skills = {},
+                Experience = ent.ServerExperienceGaveOut and ent.ServerExperienceGaveOut.Experience or 0,
                 Constitution = stats.AbilityModifiers[ 4 ],
                 Physical = stats.Abilities[ 2 ] <= stats.Abilities[ 3 ] and "Dexterity" or "Strength",
                 Casting = tostring( stats.SpellCastingAbility ),
+                Stats = _F.Default( "Stats" ),
+                Skills = {},
                 Resource = _F.Default( "Resource", true ),
                 OldStats = _F.Default( "Stats" ),
                 OldResource = _F.Default( "Resource" ),
@@ -426,7 +427,7 @@ return function( _V )
             end
 
             entity.Health.Transformed = not entity.Health.Transformed
-        elseif index == -1 or index == 1 or index == 3 or index == 5 or Osi.IsActive( uuid ) ~= 1 then
+        elseif index == -1 or index == 1 or index == 5 or health.Hp <= 0 or Osi.IsActive( uuid ) ~= 1 then
             if health.Hp ~= entity.Health.Hp then
                 entity.Health.Percent = health.Hp / math.max( 1, health.MaxHp )
                 entity.Health.Hp = health.Hp
@@ -441,8 +442,10 @@ return function( _V )
             end
 
             local hp = entity.Health.MaxHp + entity.Stats.HP
-            hp = hp + entity.Modifiers.Current.Constitution * entity.LevelChange
-            hp = hp + ( entity.Modifiers.Current.Constitution - entity.Modifiers.Original.Constitution ) * entity.LevelBase
+            if entity.Type ~= "Player" then
+                hp = hp + entity.Modifiers.Current.Constitution * entity.LevelChange
+                hp = hp + ( entity.Modifiers.Current.Constitution - entity.Modifiers.Original.Constitution ) * entity.LevelBase
+            end
             hp = hp * ( 1.0 + entity.Stats.PercentHP + entity.Stats.Size )
 
             health.MaxHp = math.max( 1, _F.Whole( hp ) )
@@ -558,6 +561,14 @@ return function( _V )
         ent:Replicate( "Data" )
     end
 
+    _F.SetExperience = function( ent )
+        local uuid, entity = _F.GetEntity( ent )
+        local xp = ent.ServerExperienceGaveOut
+        if not entity or not xp then return end
+
+        xp.Experience = entity.Experience + entity.Stats.Experience
+    end
+
     _F.UpdateNPC = function( uuid )
         uuid = _F.UUID( uuid )
 
@@ -628,6 +639,7 @@ return function( _V )
             _F.SetSpells( ent )
             _F.SetSize( ent )
             _F.SetWeight( ent )
+            _F.SetExperience( ent )
         end
     end
 

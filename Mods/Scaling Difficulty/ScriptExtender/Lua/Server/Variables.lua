@@ -25,6 +25,7 @@ _V.Stats = {}
 --- @field Intelligence number
 --- @field Wisdom number
 --- @field Charisma number
+--- @field Experience number
 --- @field Size number
 
 --- @type Resource
@@ -101,6 +102,7 @@ _V.NPC = {
 --- @field Hub Settings
 --- @field LevelBase number
 --- @field LevelChange number
+--- @field Experience number
 --- @field Constitution string
 --- @field Physical string
 --- @field Casting string
