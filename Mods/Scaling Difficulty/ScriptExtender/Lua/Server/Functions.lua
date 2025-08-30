@@ -555,7 +555,7 @@ return function( _V )
         local xp = ent.ServerExperienceGaveOut
         if not entity or not xp then return end
 
-        xp.Experience = ( entity.Experience + entity.Stats.Experience ) * ( 1.0 + entity.Stats.PercentExperience )
+        xp.Experience = math.max( 0, _F.Whole( ( entity.Experience + entity.Stats.Experience ) * ( 1.0 + entity.Stats.PercentExperience ) ) )
     end
 
     _F.UpdateNPC = function( uuid )
