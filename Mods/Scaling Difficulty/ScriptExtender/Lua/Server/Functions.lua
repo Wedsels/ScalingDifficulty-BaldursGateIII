@@ -468,7 +468,8 @@ return function( _V )
 
     _F.SetBoosts = function( ent, remove )
         local uuid, entity = _F.GetEntity( ent )
-        if not entity then return end
+        local data = ent.Data
+        if not entity or not data then return end
 
         if remove or entity.CleanBoosts or entity.OldStats.DamageBonus ~= entity.Stats.DamageBonus then
             if remove or entity.OldStats.DamageBonus ~= 0 then
@@ -496,6 +497,22 @@ return function( _V )
             end
 
             entity.OldStats.Attack = stat
+        end
+
+        if remove or entity.CleanBoosts or entity.OldStats.Size ~= entity.Stats.Size then
+            if remove or entity.OldStats.Size ~= 0.0 then
+                Osi.RemoveBoosts( uuid, string.format( _V.Boosts.Size, 1.0 + entity.OldStats.Size, 1.0 + entity.OldStats.Size, entity.OldSize ), 0, _V.Key, "" )
+            end
+
+            local stat = entity.CleanBoosts and 0.0 or entity.Stats.Size
+            local weight = _F.Whole( ( data.Weight * ( 1.0 + stat ) - data.Weight ) / 1000.0 )
+
+            if entity.CleanBoosts or stat ~= 0 then
+                Osi.AddBoosts( uuid, string.format( _V.Boosts.Size, 1.0 + stat, 1.0 + stat, weight ), _V.Key, "" )
+            end
+
+            entity.OldStats.Size = stat
+            entity.OldSize = weight
         end
 
         for _,resource in ipairs( _V.Resource ) do
@@ -533,40 +550,12 @@ return function( _V )
         end
     end
 
-    _F.SetSize = function( ent, index )
-        local uuid, entity = _F.GetEntity( ent )
-        local visual = ent.GameObjectVisual
-        if not entity or not visual then return end
-
-        if index and index > -1 then
-            entity.OldSize = visual.Scale
-        end
-
-        visual.Scale = math.min( 10.0, math.max( 0.1, entity.OldSize * ( 1.0 + entity.Stats.Size ) ) )
-
-        ent:Replicate( "GameObjectVisual" )
-    end
-
-    _F.SetWeight = function( ent, index )
-        local uuid, entity = _F.GetEntity( ent )
-        local data = ent.Data
-        if not entity or not data then return end
-
-        if index and index > -1 then
-            entity.OldWeight = data.Weight
-        end
-
-        data.Weight = math.max( 1, math.ceil( entity.OldWeight * ( 1.0 + entity.Stats.Size ) ) )
-
-        ent:Replicate( "Data" )
-    end
-
     _F.SetExperience = function( ent )
         local uuid, entity = _F.GetEntity( ent )
         local xp = ent.ServerExperienceGaveOut
         if not entity or not xp then return end
 
-        xp.Experience = entity.Experience + entity.Stats.Experience
+        xp.Experience = ( entity.Experience + entity.Stats.Experience ) * ( 1.0 + entity.Stats.PercentExperience )
     end
 
     _F.UpdateNPC = function( uuid )
@@ -637,8 +626,6 @@ return function( _V )
             _F.SetLevel( ent )
             _F.SetBoosts( ent )
             _F.SetSpells( ent )
-            _F.SetSize( ent )
-            _F.SetWeight( ent )
             _F.SetExperience( ent )
         end
     end

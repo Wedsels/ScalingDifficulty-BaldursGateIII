@@ -26,6 +26,7 @@ _V.Stats = {}
 --- @field Wisdom number
 --- @field Charisma number
 --- @field Experience number
+--- @field PercentExperience number
 --- @field Size number
 
 --- @type Resource
@@ -136,7 +137,8 @@ _V.Abilities = {
 _V.Boosts = {
     Resource = "ActionResource( %s, %d, %d )",
     RollBonus = "RollBonus( %s, %d )",
-    DamageBonus = "DamageBonus( %d )"
+    DamageBonus = "DamageBonus( %d )",
+    Size = "ScaleMultiplier( %f );CarryCapacityMultiplier( %f );Weight( %d )"
 }
 
 --- @type table< string, table< string > >

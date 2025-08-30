@@ -119,6 +119,7 @@ return function( _V )
         Wisdom = { "Increase NPC Wisdom Ability Score by X." },
         Charisma = { "Increase NPC Charisma Ability Score by X." },
         Experience = { "Increase Experience awarded by the NPC by X." },
+        PercentExperience = { "Increase Experience awarded by the NPC by X%.\n0.05 means each NPC recieves a 5% experience bonus.", "float" },
         Size = { "Increase NPC Size by X%.\n0.05 means each NPC recieves a 5% Size bonus.\nSize influences Weight and maximum HP.", "float" },
         LevelingHP = { "Increase NPC HP by X + Constitution Modifier each scaled level.", "float" },
         LevelingPercentHP = { "Increase NPC HP by X% each scaled level.\n0.05 means each NPC recieves a 5% max health bonus.", "float" },
