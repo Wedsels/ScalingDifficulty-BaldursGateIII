@@ -43,6 +43,11 @@ return function( _V, _F )
         end
     )
 
+    local function Dispatch( func, e, index )
+        local uuid, entity, ent = _F.GetEntity( e )
+        func( uuid, entity, ent, index )
+    end
+
     Ext.Osiris.RegisterListener(
         "LevelGameplayStarted",
         2,
@@ -64,10 +69,10 @@ return function( _V, _F )
 
             Ext.Osiris.RegisterListener( "TurnStarted", 1, "after", function( c ) if Osi.IsActive( _F.UUID( c ) ) ~= 1 then return end _F.UpdateNPC( _F.UUID( c ) ) end )
 
-            Ext.Entity.OnChange( "Stats", function( ent, _, index ) _F.SetAbilities( ent, index ) end )
-            Ext.Entity.OnChange( "Health", function( ent, _, index ) _F.SetHealth( ent, index ) end )
-            Ext.Entity.OnChange( "EocLevel", function( ent, _, index ) _F.SetLevel( ent ) end )
-            Ext.Entity.OnChange( "Resistances", function( ent, _, index ) _F.SetAC( ent, index ) end )
+            Ext.Entity.OnChange( "Stats", function( ent, _, index ) Dispatch( _F.SetAbilities, ent, index ) end )
+            Ext.Entity.OnChange( "Health", function( ent, _, index ) Dispatch( _F.SetHealth, ent, index ) end )
+            Ext.Entity.OnChange( "EocLevel", function( ent, _, index ) Dispatch( _F.SetLevel, ent ) end )
+            Ext.Entity.OnChange( "Resistances", function( ent, _, index ) Dispatch( _F.SetAC, ent, index ) end )
         end
     )
 

@@ -169,7 +169,7 @@ return function( _V )
         local entity = _V.Entities[ uuid ]
         if not entity then return end
 
-        return uuid, entity
+        return uuid, entity, Ext.Entity.Get( uuid )
     end
 
     _F.AddNPC = function( ent )
@@ -249,9 +249,8 @@ return function( _V )
         return stat
     end
 
-    _F.SetSpells = function( ent )
-        local uuid, entity = _F.GetEntity( ent )
-        if not entity or entity.Type == "Player" or not next( entity.Class ) then return end
+    _F.SetSpells = function( uuid, entity, ent )
+        if not entity or not ent or entity.Type == "Player" or not next( entity.Class ) then return end
 
         local num = entity.Hub.General.Enabled and _F.Whole( entity.Hub.General.Spells * ( entity.LevelBase + entity.LevelChange ) ) or 0
         num = math.min( num, 18 )
@@ -304,12 +303,13 @@ return function( _V )
         ent.Vars.ScalingDifficultySpellCache = spells
     end
 
-    _F.SetAC = function( ent, index, type )
-        local uuid, entity = _F.GetEntity( ent )
-        if not entity or index == -1 then return end
+    _F.SetAC = function( uuid, entity, ent, index, type )
+        if not entity or not ent or index == -1 then return end
+
+        local res = ent.Resistances
+        if not res then return end
 
         local clean = index ~= 4
-        local res = ent.Resistances
         local ac = _F.Whole( entity.Stats.AC + ( clean and entity.Modifiers.Current.Dexterity - entity.Modifiers.Original.Dexterity or 0 ) )
 
         res.AC = res.AC + ac
@@ -322,12 +322,13 @@ return function( _V )
         ent:Replicate( "Resistances" )
     end
 
-    _F.SetAbilities = function( ent, index )
-        local uuid, entity = _F.GetEntity( ent )
-        if not entity then return end
+    _F.SetAbilities = function( uuid, entity, ent, index )
+        if not entity or not ent then return end
+
+        local stats = ent.Stats
+        if not stats then return end
 
         local clean = index ~= 79
-        local stats = ent.Stats
 
         for k,v in pairs( _V.Abilities ) do
             local stat = entity.Stats[ k ]
@@ -403,15 +404,15 @@ return function( _V )
         ent:Replicate( "Stats" )
     end
 
-    _F.SetHealth = function( ent, index )
-        local uuid, entity = _F.GetEntity( ent )
-        if not entity then return end
+    _F.SetHealth = function( uuid, entity, ent, index )
+        if not entity or not ent then return end
 
         local health = ent.Health
+        if not health then return end
 
         if index == 59 then
-            _F.SetAbilities( ent, 79 )
-            _F.SetAC( ent, 4 )
+            _F.SetAbilities( uuid, entity, ent, 79 )
+            _F.SetAC( uuid, entity, ent, 4 )
 
             if entity.Health.Transformed then
                 entity.Health.Hp = entity.Health.TransformedHp
@@ -452,24 +453,24 @@ return function( _V )
 
             health.Hp = math.min( health.MaxHp, math.ceil( health.MaxHp * entity.Health.Percent ) )
             entity.Health.Hp = health.Hp
-
-            ent:Replicate( "Health" )
         end
+
+        ent:Replicate( "Health" )
     end
 
-    _F.SetLevel = function( ent )
-        local uuid, entity = _F.GetEntity( ent )
-        if not entity or entity.Type == "Player" then return end
+    _F.SetLevel = function( uuid, entity, ent )
+        if not entity or not ent or entity.Type == "Player" then return end
 
         ent.EocLevel.Level = entity.LevelBase + entity.LevelChange
 
         ent:Replicate( "EocLevel" )
     end
 
-    _F.SetBoosts = function( ent, remove )
-        local uuid, entity = _F.GetEntity( ent )
+    _F.SetBoosts = function( uuid, entity, ent, remove )
+        if not entity or not ent then return end
+
         local data = ent.Data
-        if not entity or not data then return end
+        if not data then return end
 
         if remove or entity.CleanBoosts or entity.OldStats.DamageBonus ~= entity.Stats.DamageBonus then
             if remove or entity.OldStats.DamageBonus ~= 0 then
@@ -546,30 +547,29 @@ return function( _V )
 
         if entity.CleanBoosts then
             entity.CleanBoosts = false
-            Ext.Timer.WaitFor( 500, function() _F.SetBoosts( ent, true ) end )
+            Ext.Timer.WaitFor( 500, function() _F.SetBoosts( uuid, entity, ent, true ) end )
         end
     end
 
-    _F.SetExperience = function( ent )
-        local uuid, entity = _F.GetEntity( ent )
+    _F.SetExperience = function( uuid, entity, ent )
+        if not entity or not ent then return end
+
         local xp = ent.ServerExperienceGaveOut
-        if not entity or not xp then return end
+        if not xp then return end
 
         xp.Experience = math.max( 0, _F.Whole( ( entity.Experience + entity.Stats.Experience ) * ( 1.0 + entity.Stats.PercentExperience ) ) )
     end
 
     _F.UpdateNPC = function( uuid )
-        uuid = _F.UUID( uuid )
+        local entity, ent
+        uuid, entity, ent = _F.GetEntity( uuid )
 
         if not uuid then
             for id,_ in pairs( _V.Entities ) do
                 _F.UpdateNPC( id )
             end
         else
-            local ent = Ext.Entity.Get( uuid )
             if not ent then _V.Entities[ uuid ] = nil return end
-
-            local entity = _V.Entities[ uuid ]
             if not entity or not entity.Hub then _F.AddNPC( ent ) return end
 
             local arch = _F.Archetype( ent, uuid )
@@ -620,13 +620,13 @@ return function( _V )
                 end
             end
 
-            _F.SetAbilities( ent )
-            _F.SetAC( ent )
-            _F.SetHealth( ent )
-            _F.SetLevel( ent )
-            _F.SetBoosts( ent )
-            _F.SetSpells( ent )
-            _F.SetExperience( ent )
+            _F.SetAbilities( uuid, entity, ent )
+            _F.SetAC( uuid, entity, ent )
+            _F.SetHealth( uuid, entity, ent )
+            _F.SetLevel( uuid, entity, ent )
+            _F.SetBoosts( uuid, entity, ent )
+            _F.SetSpells( uuid, entity, ent )
+            _F.SetExperience( uuid, entity, ent )
         end
     end
 
