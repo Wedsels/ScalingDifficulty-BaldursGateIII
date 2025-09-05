@@ -100,8 +100,9 @@ return function( _V )
 
     local tips = {
         Enabled = { "", "checkbox" },
-        Downscaling = { "Downlevel the NPC to the Party Level.", "checkbox" },
         LevelBonus = { "Level the NPC to the Party Level + X.", "int" },
+        Downscaling = { "Downlevel the NPC to the Party Level.", "checkbox" },
+        ExperienceLevel = { "Whether the NPC's base Experience Reward will match their scaled Level.", "checkbox" },
         Spells = { "Give NPC casters a random number of spells up to X * Level.\n\nThe given spells match the NPC archetype from a custom dynamic class-based system.\nWorks with any modded spells.", "float" },
         SpellBlacklist = { "The names of spells to not give through NPC Spells sepearated by ';'\n\nSuch as:\nLighting Arrow;True Strike", "text" },
         HP = { "Increase NPC HP by X." },

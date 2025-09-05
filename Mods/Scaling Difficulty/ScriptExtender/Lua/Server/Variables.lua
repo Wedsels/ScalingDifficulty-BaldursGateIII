@@ -61,6 +61,7 @@ _V.General = {}
 --- @field Enabled boolean
 --- @field LevelBonus number
 --- @field Downscaling boolean
+--- @field ExperienceLevel boolean
 --- @field Spells number
 --- @field SpellBlacklist string
 
@@ -103,7 +104,7 @@ _V.NPC = {
 --- @field Hub Settings
 --- @field LevelBase number
 --- @field LevelChange number
---- @field Experience number
+--- @field Experience table< number >
 --- @field Constitution string
 --- @field Physical string
 --- @field Casting string

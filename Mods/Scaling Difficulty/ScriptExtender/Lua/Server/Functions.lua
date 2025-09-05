@@ -186,6 +186,18 @@ return function( _V )
 
             local type = _F.Archetype( ent, uuid )
 
+            local xp
+            local statsource = Ext.Stats.Get( data.StatsId )
+            if statsource and statsource.XPReward then
+                local xpsource = Ext.StaticData.Get( statsource.XPReward, "ExperienceReward" )
+                if xpsource then
+                    xp = {}
+                    for i = 1, 12 do
+                        xp[ i ] = xpsource.PerLevelRewards[ i ]
+                    end
+                end
+            end
+
             _V.Entities[ uuid ] = {
                 Name = ent.ServerCharacter and ent.ServerCharacter.Template.Name or uuid,
                 Scaled = false,
@@ -193,7 +205,7 @@ return function( _V )
                 Hub = _V.Hub[ type ],
                 LevelBase = eoc.Level,
                 LevelChange = 0,
-                Experience = ent.ServerExperienceGaveOut and ent.ServerExperienceGaveOut.Experience or 0,
+                Experience = xp,
                 Constitution = stats.AbilityModifiers[ 4 ],
                 Physical = stats.Abilities[ 2 ] <= stats.Abilities[ 3 ] and "Dexterity" or "Strength",
                 Casting = tostring( stats.SpellCastingAbility ),
@@ -552,12 +564,15 @@ return function( _V )
     end
 
     _F.SetExperience = function( uuid, entity, ent )
-        if not entity or not ent then return end
+        if not entity or not ent or not entity.Experience then return end
 
         local xp = ent.ServerExperienceGaveOut
         if not xp then return end
 
-        xp.Experience = math.max( 0, _F.Whole( ( entity.Experience + entity.Stats.Experience ) * ( 1.0 + entity.Stats.PercentExperience ) ) )
+        local base = entity.Experience[ math.min( #entity.Experience, entity.Hub.General.ExperienceLevel and entity.LevelBase + entity.LevelChange or entity.LevelBase ) ]
+        if not base then return end
+
+        xp.Experience = math.max( 0, _F.Whole( ( base + entity.Stats.Experience ) * ( 1.0 + entity.Stats.PercentExperience ) ) )
     end
 
     _F.UpdateNPC = function( uuid )
