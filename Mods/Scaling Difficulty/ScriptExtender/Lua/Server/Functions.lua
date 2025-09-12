@@ -262,31 +262,34 @@ return function( _V )
     end
 
     _F.SetSpells = function( uuid, entity, ent )
-        if not entity or not ent or entity.Type == "Player" or not next( entity.Class ) then return end
+        if not entity or not ent or not next( entity.Class ) then return end
 
         local num = entity.Hub.General.Enabled and _F.Whole( entity.Hub.General.Spells * ( entity.LevelBase + entity.LevelChange ) ) or 0
         num = math.min( num, 18 )
         if num == entity.OldSpells and entity.Hub.General.SpellBlacklist == entity.OldBlacklist then return end
 
-        local seed = _F.Hash( uuid )
-        local ran = _F.RNG( seed )
-
+        local spells = {}
         local blacklist = {}
-        for _,spell in ipairs( _F.Split( entity.Hub.General.SpellBlacklist, ';' ) ) do
-            local tbl = _V.SpellNames[ spell:gsub( "[%s%p]", "" ):lower() ]
-            if tbl then
-                for _,name in ipairs( tbl ) do
-                    blacklist[ name ] = true
+
+        if entity.Type ~= "Player" then
+            local seed = _F.Hash( uuid )
+            local ran = _F.RNG( seed )
+
+            for _,spell in ipairs( _F.Split( entity.Hub.General.SpellBlacklist, ';' ) ) do
+                local tbl = _V.SpellNames[ spell:gsub( "[%s%p]", "" ):lower() ]
+                if tbl then
+                    for _,name in ipairs( tbl ) do
+                        blacklist[ name ] = true
+                    end
                 end
             end
-        end
 
-        local spells = {}
-        local roll = ran( num, 2 )
-        for _ = 1, roll do
-            local spell = ran( ran( ran( entity.Class ) ) )
-            if not blacklist[ spell ] then
-                spells[ #spells + 1 ] = spell
+            local roll = ran( num, 2 )
+            for _ = 1, roll do
+                local spell = ran( ran( ran( entity.Class ) ) )
+                if not blacklist[ spell ] then
+                    spells[ #spells + 1 ] = spell
+                end
             end
         end
 
@@ -604,6 +607,11 @@ return function( _V )
             end
 
             local level = math.max( 0, party + ( entity.Hub.General.Enabled and entity.Hub.General.LevelBonus or 0 ) )
+
+            if entity.Hub.General.MaxLevel > 0 then
+                level = math.min( level, entity.Hub.General.MaxLevel )
+            end
+
             if level < entity.LevelBase and ( not entity.Hub.General.Enabled or not entity.Hub.General.Downscaling ) then
                 level = entity.LevelBase
             elseif arch == "Player" then

@@ -59,6 +59,7 @@ _V.Resource = {}
 _V.General = {}
 --- @class General
 --- @field Enabled boolean
+--- @field MaxLevel number
 --- @field LevelBonus number
 --- @field Downscaling boolean
 --- @field ExperienceLevel boolean
