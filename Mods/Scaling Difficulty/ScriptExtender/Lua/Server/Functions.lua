@@ -318,7 +318,7 @@ return function( _V )
         ent.Vars.ScalingDifficultySpellCache = spells
     end
 
-    _F.SetAC = function( uuid, entity, ent, index, type )
+    _F.SetAC = function( uuid, entity, ent, index )
         if not entity or not ent or index == -1 then return end
 
         local res = ent.Resistances
@@ -474,7 +474,7 @@ return function( _V )
     end
 
     _F.SetLevel = function( uuid, entity, ent )
-        if not entity or not ent or entity.Type == "Player" then return end
+        if not entity or not ent or entity.Type == "Player" or Osi.DB_Origins:Get( uuid )[ 1 ] then return end
 
         ent.EocLevel.Level = entity.LevelBase + entity.LevelChange
 
